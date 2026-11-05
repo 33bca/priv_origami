@@ -342,6 +342,82 @@ template:
             none
           {% endif %}
 
+      # The balcony scene that was turned on last, such as evening. The state is none while the lights are off.
+      - name: Balkon Szenen
+        unique_id: balcony_scene
+        icon: mdi:palette-outline
+        state: >
+          {% if is_state('light.balkon', 'on') %}
+            {% set current_scene = states('select.balkon_szene') | lower %}
+            {% set mapping = {
+              'nachtlicht': 'nacht',
+            } %}
+            {{ mapping.get(current_scene, current_scene | slugify) }}
+          {% else %}
+            none
+          {% endif %}
+
+      # The bedroom scene that was turned on last, such as evening. The state is none while the lights are off.
+      - name: Schlafzimmer Szenen
+        unique_id: bedroom_scene
+        icon: mdi:palette-outline
+        state: >
+          {% if is_state('light.schlafzimmer', 'on') %}
+            {% set current_scene = states('select.schlafzimmer_szene') | lower %}
+            {% set mapping = {
+              'dark': 'nacht',
+              'chillo mode': 'gemütlich',
+            } %}
+            {{ mapping.get(current_scene, current_scene | slugify) }}
+          {% else %}
+            none
+          {% endif %}
+
+      # The office scene that was turned on last, such as evening. The state is none while the lights are off.
+      - name: Büro Szenen
+        unique_id: office_scene
+        icon: mdi:palette-outline
+        state: >
+          {% if is_state('light.buro', 'on') %}
+            {% set current_scene = states('select.buro_szene') | lower %}
+            {% set mapping = {
+              'fuchsia frost': 'mood',
+            } %}
+            {{ mapping.get(current_scene, current_scene | slugify) }}
+          {% else %}
+            none
+          {% endif %}
+
+      # The bathroom scene that was turned on last, such as evening. The state is none while the lights are off.
+      - name: Bad Szenen
+        unique_id: bathroom_scene
+        icon: mdi:palette-outline
+        state: >
+          {% if is_state('light.badezimmer', 'on') %}
+            {% set current_scene = states('select.badezimmer_szene') | lower %}
+            {% set mapping = {
+              'ruhe': 'gemütlich',
+            } %}
+            {{ mapping.get(current_scene, current_scene | slugify) }}
+          {% else %}
+            none
+          {% endif %}
+
+      # The shower scene that was turned on last, such as evening. The state is none while the lights are off.
+      - name: Dusche Szenen
+        unique_id: shower_scene
+        icon: mdi:palette-outline
+        state: >
+          {% if is_state('light.dusche', 'on') %}
+            {% set current_scene = states('select.dusche_szene') | lower %}
+            {% set mapping = {
+              'ruhe': 'gemütlich',
+            } %}
+            {{ mapping.get(current_scene, current_scene | slugify) }}
+          {% else %}
+            none
+          {% endif %}
+
       # Counters for the navbar badges
       - name: Lichter an Anzahl
         unique_id: lights_on_count
