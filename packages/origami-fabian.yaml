@@ -680,3 +680,43 @@ script:
                         target:
                           area_id: "{{ current_area }}"
                         continue_on_error: true
+
+  # Set position and tilt position for one or multiple covers
+  cover_preset:
+    alias: Beschattung Position
+    description: Sets the position and tilt position for one or multiple covers.
+    fields:
+      target_cover:
+        description: The cover entity or list of entities
+        example: cover.living_room_blind
+        selector:
+          entity:
+            domain: cover
+            multiple: true
+      position:
+        description: Target position percentage
+        example: 1
+        default: 1
+        selector:
+          number:
+            min: 0
+            max: 100
+      tilt_position:
+        description: Target tilt position percentage
+        example: 40
+        default: 40
+        selector:
+          number:
+            min: 0
+            max: 100
+    sequence:
+      - action: cover.set_cover_position
+        target:
+          entity_id: "{{ target_cover }}"
+        data:
+          position: "{{ position }}"
+      - action: cover.set_cover_tilt_position
+        target:
+          entity_id: "{{ target_cover }}"
+        data:
+          tilt_position: "{{ tilt_position }}"
