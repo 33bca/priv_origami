@@ -4381,7 +4381,7 @@ views:
                           toggle: false
                           tile: true
                         scrolling_effect: false
-                        name: Hauseingangh
+                        name: Hauseingang
                         force_icon: false
                         show_name: true
                         sub_button:
