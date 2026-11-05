@@ -19,9 +19,10 @@ input_select:
   selected_speaker:
     name: Selected speaker
     options:
-      - media_player.living_room
-      - media_player.bedroom
-      - media_player.office
+      - media_player.wohnzimmer
+      - media_player.eingang
+      - media_player.roam
+      - media_player.buro
 
 template:
   - sensor:
@@ -30,14 +31,14 @@ template:
         unique_id: climate_living_room
         icon: mdi:thermometer
         state: >
-          {% set t = states('sensor.living_room_temperature') | float(none) %}
+          {% set t = states('sensor.thermometer_gang_temperatur') | float(none) %}
           {{ t | round(1) if t is not none else '?' }}
         attributes:
           temperature: >
-            {% set t = states('sensor.living_room_temperature') | float(none) %}
+            {% set t = states('sensor.thermometer_gang_temperatur') | float(none) %}
             {{ t | round(0) | int if t is not none else '?' }}
           humidity: >
-            {% set h = states('sensor.living_room_humidity') | float(none) %}
+            {% set h = states('sensor.thermometer_gang_luftfeuchtigkeit') | float(none) %}
             {{ h | round(0) | int if h is not none else '?' }}
           temp_rank: >
             {{ 'warmest' if is_state('sensor.climate_temperature_peaks', 'living_room')
@@ -49,7 +50,7 @@ template:
                else 'normal' }}
           # Comfort color on a soft scale from blue at 12° to red above 32°
           color_code: >
-            {% set t = states('sensor.living_room_temperature') | float(20) %}
+            {% set t = states('sensor.thermometer_gang_temperatur') | float(20) %}
             {% set scale = [(12, '114, 143, 168'), (15, '124, 151, 169'), (17, '139, 162, 168'),
                (18.5, '154, 174, 163'), (22, '136, 163, 126'), (24, '153, 166, 119'),
                (25, '174, 167, 111'), (26, '187, 159, 104'), (27, '192, 147, 95'),
@@ -61,14 +62,14 @@ template:
         unique_id: climate_bedroom
         icon: mdi:thermometer
         state: >
-          {% set t = states('sensor.bedroom_temperature') | float(none) %}
+          {% set t = states('sensor.thermometer_schlafzimmer_temperatur') | float(none) %}
           {{ t | round(1) if t is not none else '?' }}
         attributes:
           temperature: >
-            {% set t = states('sensor.bedroom_temperature') | float(none) %}
+            {% set t = states('sensor.thermometer_schlafzimmer_temperatur') | float(none) %}
             {{ t | round(0) | int if t is not none else '?' }}
           humidity: >
-            {% set h = states('sensor.bedroom_humidity') | float(none) %}
+            {% set h = states('sensor.thermometer_schlafzimmer_luftfeuchtigkeit') | float(none) %}
             {{ h | round(0) | int if h is not none else '?' }}
           temp_rank: >
             {{ 'warmest' if is_state('sensor.climate_temperature_peaks', 'bedroom')
@@ -79,7 +80,7 @@ template:
                else 'driest' if is_state_attr('sensor.climate_humidity_peaks', 'lowest', 'bedroom')
                else 'normal' }}
           color_code: >
-            {% set t = states('sensor.bedroom_temperature') | float(20) %}
+            {% set t = states('sensor.thermometer_schlafzimmer_temperatur') | float(20) %}
             {% set scale = [(12, '114, 143, 168'), (15, '124, 151, 169'), (17, '139, 162, 168'),
                (18.5, '154, 174, 163'), (22, '136, 163, 126'), (24, '153, 166, 119'),
                (25, '174, 167, 111'), (26, '187, 159, 104'), (27, '192, 147, 95'),
@@ -91,14 +92,14 @@ template:
         unique_id: climate_office
         icon: mdi:thermometer
         state: >
-          {% set t = states('sensor.office_temperature') | float(none) %}
+          {% set t = states('sensor.thermometer_buero_temperatur') | float(none) %}
           {{ t | round(1) if t is not none else '?' }}
         attributes:
           temperature: >
-            {% set t = states('sensor.office_temperature') | float(none) %}
+            {% set t = states('sensor.thermometer_buero_temperatur') | float(none) %}
             {{ t | round(0) | int if t is not none else '?' }}
           humidity: >
-            {% set h = states('sensor.office_humidity') | float(none) %}
+            {% set h = states('sensor.thermometer_buero_luftfeuchtigkeit') | float(none) %}
             {{ h | round(0) | int if h is not none else '?' }}
           temp_rank: >
             {{ 'warmest' if is_state('sensor.climate_temperature_peaks', 'office')
@@ -109,7 +110,7 @@ template:
                else 'driest' if is_state_attr('sensor.climate_humidity_peaks', 'lowest', 'office')
                else 'normal' }}
           color_code: >
-            {% set t = states('sensor.office_temperature') | float(20) %}
+            {% set t = states('sensor.thermometer_buero_temperatur') | float(20) %}
             {% set scale = [(12, '114, 143, 168'), (15, '124, 151, 169'), (17, '139, 162, 168'),
                (18.5, '154, 174, 163'), (22, '136, 163, 126'), (24, '153, 166, 119'),
                (25, '174, 167, 111'), (26, '187, 159, 104'), (27, '192, 147, 95'),
@@ -121,14 +122,14 @@ template:
         unique_id: climate_bathroom
         icon: mdi:thermometer
         state: >
-          {% set t = states('sensor.bathroom_temperature') | float(none) %}
+          {% set t = states('sensor.thermometer_bad_temperatur') | float(none) %}
           {{ t | round(1) if t is not none else '?' }}
         attributes:
           temperature: >
-            {% set t = states('sensor.bathroom_temperature') | float(none) %}
+            {% set t = states('sensor.thermometer_bad_temperatur') | float(none) %}
             {{ t | round(0) | int if t is not none else '?' }}
           humidity: >
-            {% set h = states('sensor.bathroom_humidity') | float(none) %}
+            {% set h = states('sensor.thermometer_bad_luftfeuchtigkeit') | float(none) %}
             {{ h | round(0) | int if h is not none else '?' }}
           temp_rank: >
             {{ 'warmest' if is_state('sensor.climate_temperature_peaks', 'bathroom')
@@ -139,7 +140,7 @@ template:
                else 'driest' if is_state_attr('sensor.climate_humidity_peaks', 'lowest', 'bathroom')
                else 'normal' }}
           color_code: >
-            {% set t = states('sensor.bathroom_temperature') | float(20) %}
+            {% set t = states('sensor.thermometer_bad_temperatur') | float(20) %}
             {% set scale = [(12, '114, 143, 168'), (15, '124, 151, 169'), (17, '139, 162, 168'),
                (18.5, '154, 174, 163'), (22, '136, 163, 126'), (24, '153, 166, 119'),
                (25, '174, 167, 111'), (26, '187, 159, 104'), (27, '192, 147, 95'),
@@ -148,28 +149,28 @@ template:
             rgba({{ (scale | selectattr(0, '>=', t) | first)[1] }}, 0.7)
 
       - name: Climate | Kitchen
-        unique_id: climate_kitchen
+        unique_id: climate_balcony
         icon: mdi:thermometer
         state: >
-          {% set t = states('sensor.kitchen_temperature') | float(none) %}
+          {% set t = states('sensor.vindstyrka_temperature') | float(none) %}
           {{ t | round(1) if t is not none else '?' }}
         attributes:
           temperature: >
-            {% set t = states('sensor.kitchen_temperature') | float(none) %}
+            {% set t = states('sensor.vindstyrka_temperature') | float(none) %}
             {{ t | round(0) | int if t is not none else '?' }}
           humidity: >
-            {% set h = states('sensor.kitchen_humidity') | float(none) %}
+            {% set h = states('sensor.vindstyrka_humidity') | float(none) %}
             {{ h | round(0) | int if h is not none else '?' }}
           temp_rank: >
-            {{ 'warmest' if is_state('sensor.climate_temperature_peaks', 'kitchen')
-               else 'coldest' if is_state_attr('sensor.climate_temperature_peaks', 'lowest', 'kitchen')
+            {{ 'warmest' if is_state('sensor.climate_temperature_peaks', 'balcony')
+               else 'coldest' if is_state_attr('sensor.climate_temperature_peaks', 'lowest', 'balcony')
                else 'normal' }}
           humidity_rank: >
-            {{ 'most_humid' if is_state('sensor.climate_humidity_peaks', 'kitchen')
-               else 'driest' if is_state_attr('sensor.climate_humidity_peaks', 'lowest', 'kitchen')
+            {{ 'most_humid' if is_state('sensor.climate_humidity_peaks', 'balcony')
+               else 'driest' if is_state_attr('sensor.climate_humidity_peaks', 'lowest', 'balcony')
                else 'normal' }}
           color_code: >
-            {% set t = states('sensor.kitchen_temperature') | float(20) %}
+            {% set t = states('sensor.vindstyrka_temperature') | float(20) %}
             {% set scale = [(12, '114, 143, 168'), (15, '124, 151, 169'), (17, '139, 162, 168'),
                (18.5, '154, 174, 163'), (22, '136, 163, 126'), (24, '153, 166, 119'),
                (25, '174, 167, 111'), (26, '187, 159, 104'), (27, '192, 147, 95'),
@@ -178,28 +179,28 @@ template:
             rgba({{ (scale | selectattr(0, '>=', t) | first)[1] }}, 0.7)
 
       - name: Climate | Small bathroom
-        unique_id: climate_small_bathroom
+        unique_id: climate_shower
         icon: mdi:thermometer
         state: >
-          {% set t = states('sensor.small_bathroom_temperature') | float(none) %}
+          {% set t = states('sensor.thermometer_dusche_temperatur') | float(none) %}
           {{ t | round(1) if t is not none else '?' }}
         attributes:
           temperature: >
-            {% set t = states('sensor.small_bathroom_temperature') | float(none) %}
+            {% set t = states('sensor.thermometer_dusche_temperatur') | float(none) %}
             {{ t | round(0) | int if t is not none else '?' }}
           humidity: >
-            {% set h = states('sensor.small_bathroom_humidity') | float(none) %}
+            {% set h = states('sensor.thermometer_dusche_luftfeuchtigkeit') | float(none) %}
             {{ h | round(0) | int if h is not none else '?' }}
           temp_rank: >
-            {{ 'warmest' if is_state('sensor.climate_temperature_peaks', 'small_bathroom')
-               else 'coldest' if is_state_attr('sensor.climate_temperature_peaks', 'lowest', 'small_bathroom')
+            {{ 'warmest' if is_state('sensor.climate_temperature_peaks', 'shower')
+               else 'coldest' if is_state_attr('sensor.climate_temperature_peaks', 'lowest', 'shower')
                else 'normal' }}
           humidity_rank: >
-            {{ 'most_humid' if is_state('sensor.climate_humidity_peaks', 'small_bathroom')
-               else 'driest' if is_state_attr('sensor.climate_humidity_peaks', 'lowest', 'small_bathroom')
+            {{ 'most_humid' if is_state('sensor.climate_humidity_peaks', 'shower')
+               else 'driest' if is_state_attr('sensor.climate_humidity_peaks', 'lowest', 'shower')
                else 'normal' }}
           color_code: >
-            {% set t = states('sensor.small_bathroom_temperature') | float(20) %}
+            {% set t = states('sensor.thermometer_dusche_temperatur') | float(20) %}
             {% set scale = [(12, '114, 143, 168'), (15, '124, 151, 169'), (17, '139, 162, 168'),
                (18.5, '154, 174, 163'), (22, '136, 163, 126'), (24, '153, 166, 119'),
                (25, '174, 167, 111'), (26, '187, 159, 104'), (27, '192, 147, 95'),
@@ -213,7 +214,7 @@ template:
         icon: mdi:thermometer
         state: >
           {% set ns = namespace(p=[]) %}
-          {% for r in ['living_room', 'bedroom', 'office', 'bathroom', 'kitchen', 'small_bathroom'] %}
+          {% for r in ['living_room', 'bedroom', 'office', 'bathroom', 'shower'] %}
             {% set v = states('sensor.' ~ r ~ '_temperature') | float(none) %}
             {% if v is not none %}{% set ns.p = ns.p + [(v, r)] %}{% endif %}
           {% endfor %}
@@ -221,7 +222,7 @@ template:
         attributes:
           lowest: >
             {% set ns = namespace(p=[]) %}
-            {% for r in ['living_room', 'bedroom', 'office', 'bathroom', 'kitchen', 'small_bathroom'] %}
+            {% for r in ['living_room', 'bedroom', 'office', 'bathroom', 'shower'] %}
               {% set v = states('sensor.' ~ r ~ '_temperature') | float(none) %}
               {% if v is not none %}{% set ns.p = ns.p + [(v, r)] %}{% endif %}
             {% endfor %}
@@ -232,7 +233,7 @@ template:
         icon: mdi:water-percent
         state: >
           {% set ns = namespace(p=[]) %}
-          {% for r in ['living_room', 'bedroom', 'office', 'bathroom', 'kitchen', 'small_bathroom'] %}
+          {% for r in ['living_room', 'bedroom', 'office', 'bathroom', 'shower'] %}
             {% set v = states('sensor.' ~ r ~ '_humidity') | float(none) %}
             {% if v is not none %}{% set ns.p = ns.p + [(v, r)] %}{% endif %}
           {% endfor %}
@@ -240,7 +241,7 @@ template:
         attributes:
           lowest: >
             {% set ns = namespace(p=[]) %}
-            {% for r in ['living_room', 'bedroom', 'office', 'bathroom', 'kitchen', 'small_bathroom'] %}
+            {% for r in ['living_room', 'bedroom', 'office', 'bathroom', 'shower'] %}
               {% set v = states('sensor.' ~ r ~ '_humidity') | float(none) %}
               {% if v is not none %}{% set ns.p = ns.p + [(v, r)] %}{% endif %}
             {% endfor %}
@@ -252,9 +253,14 @@ template:
         unit_of_measurement: "°C"
         device_class: temperature
         state: >
-          {% set v = ['living_room', 'bedroom', 'office', 'bathroom', 'kitchen', 'small_bathroom']
-             | map('regex_replace', '^(.*)$', 'sensor.\\1_temperature') | map('states')
-             | map('float', none) | reject('none') | list %}
+          {% set sensors = [
+            'sensor.thermometer_gang_temperatur',
+            'sensor.thermometer_schlafzimmer_temperatur',
+            'sensor.thermometer_buero_temperatur',
+            'sensor.thermometer_bad_temperatur',
+            'sensor.thermometer_dusche_temperatur'
+          ] %}
+          {% set v = sensors | map('states') | map('float', none) | reject('none') | list %}
           {{ (v | sum / v | count) | round(1) if v else none }}
 
       - name: Humidity average
@@ -262,9 +268,14 @@ template:
         unit_of_measurement: "%"
         device_class: humidity
         state: >
-          {% set v = ['living_room', 'bedroom', 'office', 'bathroom', 'kitchen', 'small_bathroom']
-             | map('regex_replace', '^(.*)$', 'sensor.\\1_humidity') | map('states')
-             | map('float', none) | reject('none') | list %}
+          {% set sensors = [
+            'sensor.thermometer_gang_luftfeuchtigkeit',
+            'sensor.thermometer_schlafzimmer_luftfeuchtigkeit',
+            'sensor.thermometer_buero_luftfeuchtigkeit',
+            'sensor.thermometer_bad_luftfeuchtigkeit',
+            'sensor.thermometer_dusche_luftfeuchtigkeit'
+          ] %}
+          {% set v = sensors | map('states') | map('float', none) | reject('none') | list %}
           {{ (v | sum / v | count) | round(0) if v else none }}
 
       # The whole home
@@ -285,15 +296,15 @@ template:
             {% set w = states('sensor.windows_open_count') %}
             {{ '?' if w in ['unknown', 'unavailable'] else w }}
           front_door_open: >
-            {{ states('binary_sensor.front_door') }}
+            {{ states('binary_sensor.wohnzimmer_nuki_eingang_door_open') }}
 
       - name: Windows open count
         unique_id: windows_open_count
         icon: mdi:window-open-variant
         state: >
-          {{ ['binary_sensor.living_room_balcony_door', 'binary_sensor.bedroom_window',
-              'binary_sensor.bathroom_window', 'binary_sensor.kitchen_window',
-              'binary_sensor.small_bathroom_window']
+          {{ ['binary_sensor.fenster_buro_contact',
+              'binary_sensor.fenster_schlafzimmer_contact',
+              'binary_sensor.fenster_wohnzimmer_contact']
              | select('is_state', 'on') | list | count }}
 
       # Greeting
@@ -311,21 +322,32 @@ template:
         unique_id: living_room_scene
         icon: mdi:palette-outline
         state: >
-          {% set ns = namespace(id='none', t=0) %}
-          {% for s in ['scene.living_room_evening', 'scene.living_room_dinner', 'scene.living_room_movie',
-                       'scene.living_room_late', 'scene.living_room_night'] %}
-            {% set t = as_timestamp(states(s), 0) %}
-            {% if t > ns.t %}{% set ns.t = t %}{% set ns.id = s %}{% endif %}
-          {% endfor %}
-          {{ ns.id.replace('scene.living_room_', '') if is_state('light.living_room', 'on') else 'none' }}
+          {% if is_state('light.wohnzimmer_wohnzimmer_kuche_gang', 'on') %}
+            {% set current_scene = states('select.wohnzimmer_wohnzimmer_kuche_gang_szene') | lower %}
+            {% set mapping = [
+              ('nightlight', 'nacht'),
+              ('read', 'lesen'),
+              ('entspannen', 'entspannen')
+              ('ruhe', 'ruhe')
+            ] %}
+            {% set ns = namespace(match=none) %}
+            {% for pattern, result in mapping %}
+              {% if ns.match is none and current_scene is search(pattern) %}
+                {% set ns.match = result %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.match if ns.match is not none else current_scene | slugify }}
+          {% else %}
+            none
+          {% endif %}
 
       # Counters for the navbar badges
       - name: Lights on count
         unique_id: lights_on_count
         icon: mdi:lightbulb-group
         state: >
-          {{ ['light.living_room', 'light.bedroom', 'light.office',
-              'light.bathroom', 'light.kitchen', 'light.small_bathroom']
+          {{ ['light.wohnzimmer_wohnzimmer_kuche_gang', 'light.schlafzimmer', 'light.buro',
+              'light.badezimmer', 'light.balkon', 'light.dusche']
              | select('is_state', 'on') | list | count }}
 
       - name: Active speaker count
