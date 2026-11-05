@@ -276,6 +276,15 @@ views:
             grid_options:
               columns: full
               rows: auto
+            sub_button:
+              main:
+                - name: Alle
+                  icon: mdi:chevron-right
+                  show_name: true
+                  content_layout: icon-right
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#popup_favorites'
           - type: custom:bubble-card
             card_type: sub-buttons
             modules:
@@ -989,6 +998,11 @@ views:
                       perform_action: scene.turn_on
                       target:
                         entity_id: scene.living_room_night
+              - label: Favorites
+                icon: mdi:star
+                tap_action:
+                  action: navigate
+                  navigation_path: '#popup_favorites'
               - label: More
                 icon: mdi:dots-horizontal
                 tap_action:
@@ -5443,6 +5457,111 @@ views:
                             data:
                               speaker: input_select.selected_speaker
                               ungroup: true
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#popup_favorites'
+            name: Favorites
+            button_type: name
+            show_header: true
+            show_icon: false
+            show_previous_button: false
+            popup_mode: fit-content
+            scrolling_effect: false
+            with_bottom_offset: true
+            margin: 7px
+            margin_top_mobile: 24px
+            margin_top_desktop: 30%
+            width_desktop: ''
+            modules:
+              - origami_base
+              - origami_popup
+            cards:
+              - type: vertical-stack
+                cards:
+                  - type: custom:bubble-card
+                    card_type: sub-buttons
+                    modules:
+                      - origami_base
+                      - origami_tiles
+                    origami_tiles:
+                      layout: list
+                      sign: open
+                    sub_button:
+                      bottom:
+                        - entity: binary_sensor.wohnzimmer_nuki_eingang_door_open
+                          name: Zutritt
+                          icon: mdi:door
+                          tap_action:
+                            action: navigate
+                            navigation_path: '#popup_lock'
+                          hold_action:
+                            action: more-info
+                        - entity: sensor.k2pro_print_status
+                          name: K2 Pro
+                          icon: mdi:printer-3d
+                          tap_action:
+                            action: navigate
+                            navigation_path: '#popup_printer'
+                        - entity: vacuum.r2_d2
+                          name: R2-D2
+                          icon: mdi:robot-vacuum-variant
+                          tap_action:
+                            action: navigate
+                            navigation_path: '#popup_vacuum'
+                        - entity: sensor.kuche_ofen_geratestatus
+                          name: Ofen
+                          icon: mdi:stove
+                          tap_action:
+                            action: navigate
+                            navigation_path: '#popup_oven'
+                  - type: custom:bubble-card
+                    card_type: separator
+                    name: Medien
+                    modules:
+                      - origami_base
+                      - origami_header
+                  - type: custom:bubble-card
+                    card_type: sub-buttons
+                    modules:
+                      - origami_base
+                      - origami_tiles
+                    origami_tiles:
+                      layout: list
+                      sign: open
+                    sub_button:
+                      bottom:
+                        - name: Lautsprecher
+                          icon: mdi:speaker
+                          tap_action:
+                            action: navigate
+                            navigation_path: '#popup_music'
+                        - entity: media_player.wohnzimmer_lg_oled_c5
+                          name: TV
+                          icon: mdi:television
+                          tap_action:
+                            action: navigate
+                            navigation_path: '#popup_tv'
+                  - type: custom:bubble-card
+                    card_type: separator
+                    name: Mehr
+                    modules:
+                      - origami_base
+                      - origami_header
+                  - type: custom:bubble-card
+                    card_type: sub-buttons
+                    modules:
+                      - origami_base
+                      - origami_tiles
+                    origami_tiles:
+                      layout: list
+                      sign: open
+                    sub_button:
+                      bottom:
+                        - name: Lichter
+                          icon: mdi:lightbulb
+                          tap_action:
+                            action: navigate
+                            navigation_path: '#popup_lights'
         column_span: 1
         theme: Origami
       - type: grid
