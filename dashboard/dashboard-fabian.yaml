@@ -3893,10 +3893,10 @@ views:
             name: TV
             button_type: name
             show_icon: false
-            margin_top_mobile: 72px
-            margin_top_desktop: 300px
+            margin_top_mobile: 24px
+            margin_top_desktop: 30%
             bg_opacity: 100
-            popup_mode: adaptive-dialog
+            popup_mode: fit-content
             with_bottom_offset: true
             performance_mode: performance
             modules:
