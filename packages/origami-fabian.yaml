@@ -7,17 +7,17 @@
 input_boolean:
   # Opens the climate table under the rooms header
   room_climate_card:
-    name: Room climate table
+    name: Zimmer Klima-Tabelle
     icon: mdi:table
   # Shows the rooms beyond the first four
   all_rooms:
-    name: All rooms
+    name: Alle Zimmer
     icon: mdi:home-group
 
 input_select:
   # Fallback for the active speaker when nothing plays
   selected_speaker:
-    name: Selected speaker
+    name: Aktiver Lautsprecher
     options:
       - media_player.wohnzimmer
       - media_player.eingang
@@ -27,7 +27,7 @@ input_select:
 template:
   - sensor:
       # Room climate, one sensor for each room. Copy the block and replace the source sensors.
-      - name: Climate | Living room
+      - name: Klima | Wohnzimmer
         unique_id: climate_living_room
         icon: mdi:thermometer
         state: >
@@ -58,7 +58,7 @@ template:
                (32, '170, 106, 90'), (99, '156, 96, 86')] %}
             rgba({{ (scale | selectattr(0, '>=', t) | first)[1] }}, 0.7)
 
-      - name: Climate | Bedroom
+      - name: Klima | Schlafzimmer
         unique_id: climate_bedroom
         icon: mdi:thermometer
         state: >
@@ -88,7 +88,7 @@ template:
                (32, '170, 106, 90'), (99, '156, 96, 86')] %}
             rgba({{ (scale | selectattr(0, '>=', t) | first)[1] }}, 0.7)
 
-      - name: Climate | Office
+      - name: Klima | Büro
         unique_id: climate_office
         icon: mdi:thermometer
         state: >
@@ -118,7 +118,7 @@ template:
                (32, '170, 106, 90'), (99, '156, 96, 86')] %}
             rgba({{ (scale | selectattr(0, '>=', t) | first)[1] }}, 0.7)
 
-      - name: Climate | Bathroom
+      - name: Klima | Bad
         unique_id: climate_bathroom
         icon: mdi:thermometer
         state: >
@@ -148,7 +148,7 @@ template:
                (32, '170, 106, 90'), (99, '156, 96, 86')] %}
             rgba({{ (scale | selectattr(0, '>=', t) | first)[1] }}, 0.7)
 
-      - name: Climate | Kitchen
+      - name: Klima | Balkon
         unique_id: climate_balcony
         icon: mdi:thermometer
         state: >
@@ -178,7 +178,7 @@ template:
                (32, '170, 106, 90'), (99, '156, 96, 86')] %}
             rgba({{ (scale | selectattr(0, '>=', t) | first)[1] }}, 0.7)
 
-      - name: Climate | Small bathroom
+      - name: Klima | Dusche
         unique_id: climate_shower
         icon: mdi:thermometer
         state: >
@@ -209,7 +209,7 @@ template:
             rgba({{ (scale | selectattr(0, '>=', t) | first)[1] }}, 0.7)
 
       # The warmest, coldest, most humid and driest room
-      - name: Climate | Temperature peaks
+      - name: Klima | Temperatur-Peaks
         unique_id: climate_temperature_peaks
         icon: mdi:thermometer
         state: >
@@ -228,7 +228,7 @@ template:
             {% endfor %}
             {{ (ns.p | min)[1] if ns.p | count > 1 and (ns.p | max)[0] > (ns.p | min)[0] else 'none' }}
 
-      - name: Climate | Humidity peaks
+      - name: Klima | Luftfeuchtigkeit-Peaks
         unique_id: climate_humidity_peaks
         icon: mdi:water-percent
         state: >
@@ -248,7 +248,7 @@ template:
             {{ (ns.p | min)[1] if ns.p | count > 1 and (ns.p | max)[0] > (ns.p | min)[0] else 'none' }}
 
       # Averages over all rooms
-      - name: Temperature average
+      - name: Temperatur-Durchschnitt
         unique_id: temperature_average
         unit_of_measurement: "°C"
         device_class: temperature
@@ -263,7 +263,7 @@ template:
           {% set v = sensors | map('states') | map('float', none) | reject('none') | list %}
           {{ (v | sum / v | count) | round(1) if v else none }}
 
-      - name: Humidity average
+      - name: Luftfeuchtigkeit-Durchschnitt
         unique_id: humidity_average
         unit_of_measurement: "%"
         device_class: humidity
@@ -279,7 +279,7 @@ template:
           {{ (v | sum / v | count) | round(0) if v else none }}
 
       # The whole home
-      - name: Climate | Home
+      - name: Klima | Gesamt
         unique_id: climate_home
         icon: mdi:home-thermometer
         state: >
@@ -298,7 +298,7 @@ template:
           front_door_open: >
             {{ states('binary_sensor.wohnzimmer_nuki_eingang_door_open') }}
 
-      - name: Windows open count
+      - name: Offene Fenster
         unique_id: windows_open_count
         icon: mdi:window-open-variant
         state: >
@@ -313,12 +313,13 @@ template:
         icon: mdi:hand-wave
         state: >
           {% set h = now().hour %}
-          {% if h < 5 %}still awake?
-          {% elif h < 22 %}hello there
-          {% else %}good night{% endif %}
+          {% set h = now().hour %}
+          {% if h < 5 %}Noch wach?
+          {% elif h < 22 %}Na, hallo!
+          {% else %}Schlaf gut!{% endif %}
 
       # The living room scene that was turned on last, such as evening. The state is none while the lights are off.
-      - name: Living room scene
+      - name: Wohnzimmer Szenen
         unique_id: living_room_scene
         icon: mdi:palette-outline
         state: >
@@ -342,7 +343,7 @@ template:
           {% endif %}
 
       # Counters for the navbar badges
-      - name: Lights on count
+      - name: Lichter an Anzahl
         unique_id: lights_on_count
         icon: mdi:lightbulb-group
         state: >
@@ -350,7 +351,7 @@ template:
               'light.badezimmer', 'light.balkon', 'light.dusche']
              | select('is_state', 'on') | list | count }}
 
-      - name: Active speaker count
+      - name: Aktive Lautsprecher Anzahl
         unique_id: active_speaker_count
         icon: mdi:speaker-multiple
         state: >
@@ -361,7 +362,7 @@ template:
       # A playing speaker comes first, then a speaker on a TV input or Bluetooth, then a paused speaker,
       # and then the selected speaker.
       # A playing group leader comes before its members.
-      - name: Active target
+      - name: Aktives Ziel
         unique_id: active_target
         icon: mdi:target
         state: >
@@ -399,7 +400,7 @@ template:
       # Music Assistant keeps the last title while it is idle.
       # The Music Assistant player (the _mass entity) also reports playing while the speaker
       # uses one of its own sources, such as Bluetooth or Spotify. Its data therefore only counts while no such source is active.
-      - name: Active speaker
+      - name: Aktiver Lautsprecher
         unique_id: active_speaker
         icon: mdi:speaker-play
         state: >
@@ -518,7 +519,7 @@ template:
 script:
   # Volume in small steps, for the TV pop-up
   volume:
-    alias: Volume
+    alias: Lautstärke Schritt
     description: Turns a speaker up or down in small steps, or mutes it.
     mode: queued
     fields:
@@ -554,7 +555,7 @@ script:
 
   # Used by the plus and minus buttons on the thermostat cards
   thermostat_step:
-    alias: Thermostat step
+    alias: Thermostat Schritt
     description: Moves a thermostat's target temperature up or down.
     mode: queued
     fields:
@@ -578,7 +579,7 @@ script:
 
   # Everything off, at the bottom of a room pop-up
   room_off:
-    alias: Room off
+    alias: Raum aus
     description: Turns off the lights, fans, media players and switches in an area.
     fields:
       area:
