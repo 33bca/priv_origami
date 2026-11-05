@@ -25,6 +25,24 @@ input_select:
       - media_player.buro
 
 template:
+  - number:
+      - name: Gruppenlautstärke
+        unique_id: group_volume
+        default_entity_id: number.group_volume
+        unit_of_measurement: "%"
+        min: 0
+        max: 100
+        step: 1
+        state: >
+          {% set s = states('input_select.selected_speaker') %}
+          {% set v = (state_attr(s, 'group_members') or [s])
+             | map('state_attr', 'volume_level') | select('number') | list %}
+          {{ (v | sum / v | count * 100) | round if v else 0 }}
+        set_value:
+          - action: script.set_group_volume
+            data:
+              speaker: input_select.selected_speaker
+              volume: "{{ value }}"
   - sensor:
       # Room climate, one sensor for each room. Copy the block and replace the source sensors.
       - name: Klima | Wohnzimmer
@@ -431,7 +449,8 @@ template:
         unique_id: active_speaker_count
         icon: mdi:speaker-multiple
         state: >
-          {{ ['media_player.living_room', 'media_player.bedroom', 'media_player.office']
+          {{ ['media_player.wohnzimmer', 'media_player.roam',
+              'media_player.eingang', 'media_player.buro']
              | select('is_state', ['playing', 'buffering']) | list | count }}
 
       # The most relevant speaker, for the card above the navigation bar.
@@ -442,8 +461,8 @@ template:
         unique_id: active_target
         icon: mdi:target
         state: >
-          {% set players = ['media_player.living_room', 'media_player.office',
-             'media_player.bedroom'] %}
+          {% set players = ['media_player.wohnzimmer', 'media_player.buro',
+             'media_player.roam', 'media_player.eingang'] %}
           {% set dead = ['off', 'standby', 'unknown', 'unavailable', ''] %}
           {% set ns = namespace(playing=[], physical=[], paused=[]) %}
 
@@ -522,9 +541,10 @@ template:
           speaker: >
             {% set z = states('sensor.active_target') %}
             {% set short = {
-              'media_player.living_room': 'Living',
-              'media_player.office':      'Office',
-              'media_player.bedroom':     'Bedroom' } %}
+              'media_player.wohnzimmer': 'Wohnzimmer',
+              'media_player.roam':       'Roam',
+              'media_player.eingang':    'Eingang',
+              'media_player.buro':       'Büro' } %}
             {% set n = short.get(z, state_attr(z, 'friendly_name'))
                | default('Speaker', true) %}
             {% set members = state_attr(z, 'group_members') or [] %}
@@ -593,6 +613,175 @@ template:
             {% endif %}
 
 script:
+  playback:
+    alias: Playback
+    description: Controls playback on the selected speaker or its group.
+    mode: queued
+    fields:
+      speaker:
+        description: The dropdown helper that selects the speaker, or a speaker
+        example: input_select.selected_speaker
+        selector:
+          entity:
+            domain:
+              - input_select
+              - media_player
+      command:
+        description: What to do with the speaker
+        example: play_pause
+        selector:
+          select:
+            options:
+              - play_pause
+              - previous_track
+              - next_track
+              - shuffle
+              - favorite
+    sequence:
+      - variables:
+          selected: "{{ states(speaker) if speaker.startswith('input_select.') else speaker }}"
+          leader: "{{ (state_attr(selected, 'group_members') or [selected])[0] }}"
+      - choose:
+          - alias: Shuffle
+            conditions: "{{ command == 'shuffle' }}"
+            sequence:
+              - action: media_player.shuffle_set
+                target:
+                  entity_id: "{{ leader }}"
+                data:
+                  shuffle: "{{ not state_attr(leader, 'shuffle') }}"
+          - alias: Favorite
+            conditions: "{{ command == 'favorite' }}"
+            sequence:
+              - variables:
+                  device: "{{ device_id(selected) }}"
+                  button: >-
+                    {{ (integration_entities('music_assistant') | select('match', 'button\\.')
+                    | select('in', device_entities(device) if device else []) | list + [''])[0] }}
+              - condition: template
+                value_template: "{{ button != '' }}"
+              - action: button.press
+                target:
+                  entity_id: "{{ button }}"
+        default:
+          - action: "media_player.media_{{ command }}"
+            target:
+              entity_id: "{{ leader }}"
+
+  set_group_volume:
+    alias: Set group volume
+    description: Sets the volume of the selected speaker and its group, preserving the balance between speakers.
+    mode: queued
+    fields:
+      speaker:
+        description: The dropdown helper that selects the speaker, or a speaker
+        example: input_select.selected_speaker
+        selector:
+          entity:
+            domain:
+              - input_select
+              - media_player
+      volume:
+        description: The new volume in percent
+        example: 20
+        selector:
+          number:
+            min: 0
+            max: 100
+            unit_of_measurement: "%"
+    sequence:
+      - variables:
+          selected: "{{ states(speaker) if speaker.startswith('input_select.') else speaker }}"
+          members: "{{ state_attr(selected, 'group_members') or [selected] }}"
+          levels: "{{ members | map('state_attr', 'volume_level') | select('number') | list }}"
+          before: "{{ levels | sum / levels | count if levels else 0 }}"
+          after: "{{ volume | float(0) / 100 }}"
+      - repeat:
+          for_each: "{{ members }}"
+          sequence:
+            - action: media_player.volume_set
+              target:
+                entity_id: "{{ repeat.item }}"
+              data:
+                volume_level: >-
+                  {% set level = state_attr(repeat.item, 'volume_level') | float(0) %}
+                  {% set wanted = level * after / before if before > 0 else after %}
+                  {{ 0 if after == 0 else ([[wanted, 0.01 if level > 0 else 0] | max, 1] | min) | round(2) }}
+
+  group_speakers:
+    alias: Group speakers
+    description: Adds or removes speakers from the selected speaker group.
+    mode: queued
+    fields:
+      speaker:
+        description: The dropdown helper that selects the speaker, or a speaker
+        example: input_select.selected_speaker
+        selector:
+          entity:
+            domain:
+              - input_select
+              - media_player
+      member:
+        description: The speaker to add to the group or remove from it
+        example: media_player.roam
+        selector:
+          entity:
+            domain: media_player
+      all:
+        description: Adds every available speaker that is not playing or using an input
+        example: true
+      ungroup:
+        description: Ends the speaker group
+        example: true
+    sequence:
+      - variables:
+          selected: "{{ states(speaker) if speaker.startswith('input_select.') else speaker }}"
+          leader: "{{ (state_attr(selected, 'group_members') or [selected])[0] }}"
+          members: "{{ state_attr(leader, 'group_members') or [leader] }}"
+      - choose:
+          - alias: End the group
+            conditions: "{{ ungroup | default(false) and members | count > 1 }}"
+            sequence:
+              - action: media_player.unjoin
+                target:
+                  entity_id: "{{ members[1:] }}"
+          - alias: Add every free speaker
+            conditions: "{{ all | default(false) }}"
+            sequence:
+              - variables:
+                  free: >-
+                    {% set ns = namespace(free=[]) %}
+                    {% for s in state_attr(speaker, 'options') or [] %}
+                      {% if s not in members
+                         and states(s) not in ['playing', 'buffering', 'unavailable', 'unknown']
+                         and (state_attr(s, 'source') or '') is not search('bluetooth|optical|coax|hdmi|line|aux', ignorecase=true) %}
+                        {% set ns.free = ns.free + [s] %}
+                      {% endif %}
+                    {% endfor %}
+                    {{ ns.free }}
+              - if: "{{ free | count > 0 }}"
+                then:
+                  - action: media_player.join
+                    target:
+                      entity_id: "{{ leader }}"
+                    data:
+                      group_members: "{{ free }}"
+          - alias: Take the speaker out
+            conditions: "{{ member is defined and member in members }}"
+            sequence:
+              - action: media_player.unjoin
+                target:
+                  entity_id: "{{ selected if member == leader else member }}"
+          - alias: Add the speaker
+            conditions: "{{ member is defined }}"
+            sequence:
+              - action: media_player.join
+                target:
+                  entity_id: "{{ leader }}"
+                data:
+                  group_members:
+                    - "{{ member }}"
+
   # Volume in small steps, for the TV pop-up
   volume:
     alias: Lautstärke Schritt

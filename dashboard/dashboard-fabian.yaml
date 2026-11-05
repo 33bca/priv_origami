@@ -4823,585 +4823,626 @@ views:
           - type: custom:bubble-card
             card_type: pop-up
             hash: '#popup_music'
+            name: ''
             button_type: name
             show_header: true
-            show_name: true
             show_icon: false
-            card_layout: large
-            buttons_position: right
             scrolling_effect: false
             margin: 7px
-            margin_top_mobile: 22px
-            margin_top_desktop: 30%
-            bg_color: transparent
-            bg_opacity: '100'
-            bg_blur: '0'
-            hide_backdrop: false
+            margin_top_mobile: 0px
+            margin_top_desktop: 20%
+            popup_mode: fit-content
+            with_bottom_offset: true
             modules:
               - origami_base
               - origami_popup
+            origami_base:
+              animate: true
             origami_popup:
-              value_style: text
+              gap: var(--ha-space-4)
+              art: ${states('input_select.selected_speaker')}
+              value_style: chip
+              value_position: beside
+              mini_popups:
+                group:
+                  width: 256px
+                  cards:
+                    - type: custom:bubble-card
+                      card_type: separator
+                      name: ${name(states('input_select.selected_speaker'))}
+                      modules:
+                        - origami_header
+                      origami_header:
+                        weight: medium
+                        value_size: var(--ha-font-size-s)
+                      sub_button:
+                        main:
+                          - name: Ungroup
+                            icon: mdi:link-variant-off
+                            show_name: true
+                            origami_header:
+                              icon: "${states('script.group_speakers') === 'on' ? 'mdi:timer-sand' : ''}"
+                              disabled: ${states('script.group_speakers') === 'on'}
+                              hidden: >-
+                                ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length
+                                ?? 0) < 2}
+                            tap_action:
+                              action: perform-action
+                              perform_action: script.group_speakers
+                              data:
+                                speaker: input_select.selected_speaker
+                                ungroup: true
+                    - type: custom:bubble-card
+                      card_type: sub-buttons
+                      modules:
+                        - origami_button
+                      origami_base:
+                        hidden: >-
+                          ${(group => (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).every((s) =>
+                          group.includes(s) || ['playing', 'buffering', 'unavailable', 'unknown'].includes(states(s))
+                          || /bluetooth|optical|coax|hdmi|line|aux/i.test(hass.states[s]?.attributes?.source ??
+                          '')))(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? [states('input_select.selected_speaker')])}
+                      origami_button:
+                        columns: 1
+                        align: center
+                        icon_size: var(--icon-size-xs)
+                        padding: 0 0 var(--ha-space-2)
+                      sub_button:
+                        main: []
+                        bottom:
+                          - name: Group all
+                            icon: mdi:link-variant
+                            show_name: true
+                            tap_action:
+                              action: perform-action
+                              perform_action: script.group_speakers
+                              data:
+                                speaker: input_select.selected_speaker
+                                all: true
+                    - type: custom:bubble-card
+                      card_type: sub-buttons
+                      modules:
+                        - origami_tiles
+                      origami_base:
+                        sub_button_height: 44px
+                      origami_tiles:
+                        layout: list
+                        slim: true
+                        dividers: true
+                        sign: add
+                        background: false
+                        pending: true
+                      sub_button:
+                        main: []
+                        bottom:
+                          - entity: media_player.wohnzimmer
+                            show_icon: false
+                            origami_tiles:
+                              'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? []).includes(entity)}
+                            visibility:
+                              - condition: state
+                                entity: input_select.selected_speaker
+                                state_not: media_player.wohnzimmer
+                            tap_action:
+                              action: perform-action
+                              perform_action: script.group_speakers
+                              data:
+                                speaker: input_select.selected_speaker
+                                member: media_player.wohnzimmer
+                          - entity: media_player.roam
+                            show_icon: false
+                            origami_tiles:
+                              'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? []).includes(entity)}
+                            visibility:
+                              - condition: state
+                                entity: input_select.selected_speaker
+                                state_not: media_player.roam
+                            tap_action:
+                              action: perform-action
+                              perform_action: script.group_speakers
+                              data:
+                                speaker: input_select.selected_speaker
+                                member: media_player.roam
+                          - entity: media_player.buro
+                            show_icon: false
+                            origami_tiles:
+                              'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? []).includes(entity)}
+                            visibility:
+                              - condition: state
+                                entity: input_select.selected_speaker
+                                state_not: media_player.buro
+                            tap_action:
+                              action: perform-action
+                              perform_action: script.group_speakers
+                              data:
+                                speaker: input_select.selected_speaker
+                                member: media_player.buro
+                          - entity: media_player.eingang
+                            show_icon: false
+                            origami_tiles:
+                              'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? []).includes(entity)}
+                            visibility:
+                              - condition: state
+                                entity: input_select.selected_speaker
+                                state_not: media_player.eingang
+                            tap_action:
+                              action: perform-action
+                              perform_action: script.group_speakers
+                              data:
+                                speaker: input_select.selected_speaker
+                                member: media_player.eingang
+                volume:
+                  - type: custom:bubble-card
+                    card_type: separator
+                    name: Volume
+                    modules:
+                      - origami_header
+                    origami_header:
+                      value_style: switch
+                      weight: medium
+                      value_size: var(--ha-font-size-s)
+                    sub_button:
+                      main:
+                        - name: Quiet
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: number.set_value
+                            target:
+                              entity_id: number.group_volume
+                            data:
+                              value: 10
+                        - name: Medium
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: number.set_value
+                            target:
+                              entity_id: number.group_volume
+                            data:
+                              value: 15
+                        - name: Loud
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: number.set_value
+                            target:
+                              entity_id: number.group_volume
+                            data:
+                              value: 20
+                  - type: custom:bubble-card
+                    card_type: sub-buttons
+                    modules:
+                      - origami_slider
+                    sub_button:
+                      main: []
+                      bottom:
+                        - entity: media_player.wohnzimmer
+                          sub_button_type: slider
+                          always_visible: true
+                          slider_live_update: false
+                          visibility:
+                            - condition: template
+                              value_template: >-
+                                {% set s = states('input_select.selected_speaker') %}
+                                {{ 'media_player.wohnzimmer' in (state_attr(s, 'group_members') or [s]) }}
+                        - entity: media_player.roam
+                          sub_button_type: slider
+                          always_visible: true
+                          slider_live_update: false
+                          visibility:
+                            - condition: template
+                              value_template: >-
+                                {% set s = states('input_select.selected_speaker') %}
+                                {{ 'media_player.roam' in (state_attr(s, 'group_members') or [s]) }}
+                        - entity: media_player.buro
+                          sub_button_type: slider
+                          always_visible: true
+                          slider_live_update: false
+                          visibility:
+                            - condition: template
+                              value_template: >-
+                                {% set s = states('input_select.selected_speaker') %}
+                                {{ 'media_player.buro' in (state_attr(s, 'group_members') or [s]) }}
+                        - entity: media_player.eingang
+                          sub_button_type: slider
+                          always_visible: true
+                          slider_live_update: false
+                          visibility:
+                            - condition: template
+                              value_template: >-
+                                {% set s = states('input_select.selected_speaker') %}
+                                {{ 'media_player.eingang' in (state_attr(s, 'group_members') or [s]) }}
+                more:
+                  width: fit-content
+                  max_height: 320px
+                  frameless: true
+                  cards:
+                    - type: custom:bubble-card
+                      card_type: sub-buttons
+                      modules:
+                        - origami_button
+                      origami_button:
+                        columns: 1
+                        icon_size: var(--icon-size-xs)
+                        active_style: toggle
+                      sub_button:
+                        main: []
+                        bottom:
+                          - name: Bluetooth
+                            icon: mdi:bluetooth
+                            show_name: true
+                            origami_button:
+                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                              disabled: >-
+                                ${(hass.states['media_player.wohnzimmer']?.attributes?.group_members?.[0] ??
+                                'media_player.wohnzimmer') !== 'media_player.wohnzimmer'}
+                            tap_action:
+                              action: perform-action
+                              perform_action: media_player.select_source
+                              target:
+                                entity_id: media_player.wohnzimmer
+                              data:
+                                source: Bluetooth
+                          - name: TV
+                            icon: mdi:television-classic
+                            show_name: true
+                            origami_button:
+                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                              disabled: >-
+                                ${(hass.states['media_player.wohnzimmer']?.attributes?.group_members?.[0] ??
+                                'media_player.wohnzimmer') !== 'media_player.wohnzimmer'}
+                            tap_action:
+                              action: perform-action
+                              perform_action: media_player.select_source
+                              target:
+                                entity_id: media_player.wohnzimmer
+                              data:
+                                source: Optical In
+                          - entity: switch.wohnzimmer_loudness
+                            name: Loudness
+                            show_name: true
+                            origami_button:
+                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                            tap_action:
+                              action: toggle
+                          - entity: switch.wohnzimmer_nachtton
+                            name: Nachtton
+                            show_name: true
+                            origami_button:
+                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                            tap_action:
+                              action: toggle
+                          - entity: switch.wohnzimmer_sprachverbesserung
+                            name: Sprache
+                            show_name: true
+                            origami_button:
+                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                            tap_action:
+                              action: toggle
+                          - entity: switch.buro_loudness
+                            name: Loudness
+                            show_name: true
+                            origami_button:
+                              hidden: ${states('input_select.selected_speaker') !== 'media_player.buro'}
+                            tap_action:
+                              action: toggle
+                          - entity: switch.buro_nachtton
+                            name: Nachtton
+                            show_name: true
+                            origami_button:
+                              hidden: ${states('input_select.selected_speaker') !== 'media_player.buro'}
+                            tap_action:
+                              action: toggle
+                          - entity: switch.buro_sprachverbesserung
+                            name: Sprache
+                            show_name: true
+                            origami_button:
+                              hidden: ${states('input_select.selected_speaker') !== 'media_player.buro'}
+                            tap_action:
+                              action: toggle
+            sub_button:
+              main:
+                - entity: input_select.selected_speaker
+                  sub_button_type: select
+                  show_icon: false
+                - entity: media_player.wohnzimmer
+                  icon: mdi:circle
+                  show_name: false
+                  show_background: true
+                  origami_popup:
+                    name: "${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' : '') + name(entity)}"
+                    color: var(--media-color)
+                    hidden: >-
+                      ${(() => { const sel = states('input_select.selected_speaker');
+                      const lead = (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
+                      return (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).find((s) => s !== lead
+                      && (hass.states[s]?.attributes?.group_members ?? [s])[0] === s && states(s) === 'playing'); })() !== entity}
+                  tap_action:
+                    action: perform-action
+                    perform_action: input_select.select_option
+                    target:
+                      entity_id: input_select.selected_speaker
+                    data:
+                      option: media_player.wohnzimmer
+                - entity: media_player.roam
+                  icon: mdi:circle
+                  show_name: false
+                  show_background: true
+                  origami_popup:
+                    name: "${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' : '') + name(entity)}"
+                    color: var(--media-color)
+                    hidden: >-
+                      ${(() => { const sel = states('input_select.selected_speaker');
+                      const lead = (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
+                      return (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).find((s) => s !== lead
+                      && (hass.states[s]?.attributes?.group_members ?? [s])[0] === s && states(s) === 'playing'); })() !== entity}
+                  tap_action:
+                    action: perform-action
+                    perform_action: input_select.select_option
+                    target:
+                      entity_id: input_select.selected_speaker
+                    data:
+                      option: media_player.roam
+                - entity: media_player.buro
+                  icon: mdi:circle
+                  show_name: false
+                  show_background: true
+                  origami_popup:
+                    name: "${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' : '') + name(entity)}"
+                    color: var(--media-color)
+                    hidden: >-
+                      ${(() => { const sel = states('input_select.selected_speaker');
+                      const lead = (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
+                      return (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).find((s) => s !== lead
+                      && (hass.states[s]?.attributes?.group_members ?? [s])[0] === s && states(s) === 'playing'); })() !== entity}
+                  tap_action:
+                    action: perform-action
+                    perform_action: input_select.select_option
+                    target:
+                      entity_id: input_select.selected_speaker
+                    data:
+                      option: media_player.buro
+                - entity: media_player.eingang
+                  icon: mdi:circle
+                  show_name: false
+                  show_background: true
+                  origami_popup:
+                    name: "${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' : '') + name(entity)}"
+                    color: var(--media-color)
+                    hidden: >-
+                      ${(() => { const sel = states('input_select.selected_speaker');
+                      const lead = (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
+                      return (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).find((s) => s !== lead
+                      && (hass.states[s]?.attributes?.group_members ?? [s])[0] === s && states(s) === 'playing'); })() !== entity}
+                  tap_action:
+                    action: perform-action
+                    perform_action: input_select.select_option
+                    target:
+                      entity_id: input_select.selected_speaker
+                    data:
+                      option: media_player.eingang
+              bottom: []
             cards:
               - type: vertical-stack
                 cards:
-                  - type: vertical-stack
-                    cards:
-                      - type: custom:bubble-card
-                        card_type: separator
-                        name: Wohnzimmer
-                        modules:
-                          - origami_header
-                        origami_header:
-                          icon_size: var(--icon-size-s)
-                        grid_options:
-                          rows: auto
-                      - type: vertical-stack
-                        cards:
-                          - type: conditional
-                            conditions:
-                              - condition: not
-                                conditions:
-                                  - condition: state
-                                    entity_id: media_player.wohnzimmer_lg_oled_c5
-                                    state:
-                                      - 'off'
-                                      - standby
-                                      - unavailable
-                                      - unknown
-                            card:
-                              type: custom:bubble-card
-                              card_type: media-player
-                              button_type: state
-                              entity: media_player.wohnzimmer_lg_oled_c5
-                              name: TV
-                              icon: mdi:television
-                              modules:
-                                - origami_base
-                                - origami_media
-                              origami_media:
-                                layout: tv
-                                compact: false
-                                collapse: false
-                              hide:
-                                power_button: true
-                                previous_button: true
-                                next_button: true
-                                volume_button: true
-                                play_pause_button: true
-                              tap_action:
-                                action: navigate
-                                navigation_path: '#popup_tv'
-                              button_action:
-                                tap_action:
-                                  action: navigate
-                                  navigation_path: '#popup_tv'
-                              sub_button:
-                                main:
-                                  - icon: mdi:power
-                                    show_background: true
-                                    tap_action:
-                                      action: perform-action
-                                      perform_action: media_player.turn_off
-                                      target:
-                                        entity_id:
-                                          - media_player.wohnzimmer_lg_oled_c5
-                                    visibility:
-                                      - condition: state
-                                        entity: media_player.wohnzimmer_lg_oled_c5
-                                        state_not: 'off'
-                                  - icon: mdi:power
-                                    show_background: true
-                                    tap_action:
-                                      action: perform-action
-                                      perform_action: button.press
-                                      target:
-                                        entity_id: button.wohnzimmer_lg_c5_wol
-                                    visibility:
-                                      - condition: state
-                                        entity: media_player.wohnzimmer_lg_oled_c5
-                                        state: 'off'
-                                bottom:
-                                  - entity: media_player.wohnzimmer
-                                    sub_button_type: slider
-                                    always_visible: true
-                              rows: '2.2'
-                          - type: conditional
-                            conditions:
-                              - condition: not
-                                conditions:
-                                  - condition: state
-                                    entity_id: media_player.wohnzimmer
-                                    state:
-                                      - unavailable
-                                      - unknown
-                                  - condition: not
-                                    conditions:
-                                      - condition: state
-                                        entity_id: media_player.wohnzimmer_lg_oled_c5
-                                        state:
-                                          - 'off'
-                                          - standby
-                                          - unavailable
-                                          - unknown
-                            card:
-                              type: custom:bubble-card
-                              card_type: media-player
-                              button_type: state
-                              entity: media_player.wohnzimmer
-                              name: Speaker
-                              icon: mdi:speaker
-                              scrolling_effect: true
-                              modules:
-                                - origami_base
-                                - origami_media
-                              origami_base:
-                                group: true
-                              hide:
-                                power_button: true
-                                previous_button: true
-                                next_button: true
-                                volume_button: true
-                                play_pause_button: true
-                              tap_action:
-                                action: more-info
-                              button_action:
-                                tap_action:
-                                  action: more-info
-                              sub_button:
-                                main:
-                                  - icon: mdi:play
-                                    show_background: true
-                                    tap_action:
-                                      action: perform-action
-                                      perform_action: media_player.media_play_pause
-                                      target:
-                                        entity_id: media_player.wohnzimmer
-                                      data: {}
-                                    visibility:
-                                      - condition: not
-                                        conditions:
-                                          - condition: state
-                                            entity_id: media_player.wohnzimmer
-                                            state:
-                                              - playing
-                                  - icon: mdi:pause
-                                    show_background: true
-                                    tap_action:
-                                      action: perform-action
-                                      perform_action: media_player.media_play_pause
-                                      target:
-                                        entity_id: media_player.wohnzimmer
-                                      data: {}
-                                    visibility:
-                                      - condition: state
-                                        entity_id: media_player.wohnzimmer
-                                        state:
-                                          - playing
-                                  - icon: mdi:skip-next
-                                    show_background: false
-                                    tap_action:
-                                      action: perform-action
-                                      perform_action: media_player.media_next_track
-                                      target:
-                                        entity_id: media_player.wohnzimmer
-                                      data: {}
-                                bottom:
-                                  - entity: media_player.wohnzimmer
-                                    sub_button_type: slider
-                                    always_visible: true
-                              rows: '2.2'
-                              origami_media:
-                                collapse: true
-                          - type: custom:bubble-card
-                            card_type: sub-buttons
-                            modules:
-                              - origami_base
-                              - origami_button
-                            origami_base:
-                              animate: false
-                            origami_button:
-                              active_style: toggle
-                              columns: 3
-                              padding: var(--ha-space-1) 0 0 0
-                            sub_button:
-                              main: []
-                              bottom:
-                                - entity: switch.wohnzimmer_loudness
-                                  name: Loudness
-                                  show_name: true
-                                  tap_action:
-                                    action: toggle
-                                - entity: switch.wohnzimmer_nachtton
-                                  name: Nachtton
-                                  show_name: true
-                                  tap_action:
-                                    action: toggle
-                                - entity: switch.wohnzimmer_sprachverbesserung
-                                  name: Sprache
-                                  show_name: true
-                                  tap_action:
-                                    action: toggle
-                            rows: 1
-                  - type: vertical-stack
-                    cards:
-                      - type: custom:bubble-card
-                        card_type: separator
-                        name: Roam
-                        modules:
-                          - origami_header
-                        origami_header:
-                          icon_size: var(--icon-size-s)
-                        grid_options:
-                          rows: auto
-                      - type: conditional
-                        conditions:
-                          - condition: not
-                            conditions:
-                              - condition: state
-                                entity_id: media_player.roam
-                                state:
-                                  - unavailable
-                                  - unknown
-                        card:
-                          type: custom:bubble-card
-                          card_type: media-player
-                          button_type: state
-                          entity: media_player.roam
-                          name: Speaker
-                          icon: mdi:speaker
-                          scrolling_effect: true
-                          modules:
-                            - origami_base
-                            - origami_media
+                  - type: custom:bubble-card
+                    card_type: media-player
+                    button_type: state
+                    entity: input_select.selected_speaker
+                    icon: mdi:music-note
+                    name: >-
+                      ${(p => (src => !p || ['unavailable', 'unknown'].includes(p.state) ? 'Unavailable'
+                      : /bluetooth|optical|coax|hdmi|line|aux|\btv\b/i.test(src) ? format(p.entity_id, 'source')
+                      : 'Nothing playing')(String(p?.attributes?.source ?? '')))(hass.states[(s =>
+                      hass.states[s]?.attributes?.group_members?.[0] ?? s)(states('input_select.selected_speaker'))])}
+                    modules:
+                      - origami_base
+                      - origami_media
+                      - '!default'
+                    show_icon: false
+                    scrolling_effect: true
+                    cover_background: false
+                    tap_action:
+                      action: none
+                    button_action:
+                      tap_action:
+                        action: none
+                    hide:
+                      power_button: true
+                      previous_button: true
+                      next_button: true
+                      volume_button: true
+                      play_pause_button: true
+                    origami_base:
+                      frameless: true
+                      words:
+                        Optical In: TV
+                    origami_media:
+                      cover: above
+                      leader: ${(s => hass.states[s]?.attributes?.group_members?.[0] ?? s)(states('input_select.selected_speaker'))}
+                      state: >-
+                        ${(p => (src => !p || ['unavailable', 'unknown'].includes(p.state) ? 'Unavailable'
+                        : /bluetooth/i.test(src) ? 'Played from a phone'
+                        : /optical|coax|hdmi|line|aux|\btv\b/i.test(src) ? format(p.entity_id, 'source')
+                        : '')(String(p?.attributes?.source ?? '')))(hass.states[(s =>
+                        hass.states[s]?.attributes?.group_members?.[0] ?? s)(states('input_select.selected_speaker'))])}
+                      icons:
+                        bluetooth: mdi:bluetooth
+                        tv: mdi:television
+                        line: mdi:audio-input-rca
+                        idle: mdi:music-note-off
+                        'on': mdi:music-note-off
+                        'off': mdi:music-note-off
+                        unavailable: mdi:speaker-off
+                      icon_color:
+                        bluetooth: var(--media-color)
+                        tv: var(--primary-text-color)
+                        line: var(--primary-text-color)
+                        idle: var(--disabled-color)
+                        'on': var(--disabled-color)
+                        'off': var(--disabled-color)
+                        unavailable: var(--disabled-color)
+                    rows: auto
+                    sub_button:
+                      bottom_layout: rows
+                      main:
+                        - icon: mdi:link-variant
+                          sub_button_type: default
+                          show_background: true
                           origami_base:
-                            group: true
-                          hide:
-                            power_button: true
-                            previous_button: true
-                            next_button: true
-                            volume_button: true
-                            play_pause_button: true
+                            'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length ?? 0) > 1}
                           tap_action:
-                            action: more-info
-                          button_action:
-                            tap_action:
-                              action: more-info
-                          sub_button:
-                            main:
-                              - icon: mdi:play
-                                show_background: true
-                                tap_action:
-                                  action: perform-action
-                                  perform_action: media_player.media_play_pause
-                                  target:
-                                    entity_id: media_player.roam
-                                  data: {}
-                                visibility:
-                                  - condition: not
-                                    conditions:
-                                      - condition: state
-                                        entity_id: media_player.wohnzimmer
-                                        state:
-                                          - playing
-                              - icon: mdi:pause
-                                show_background: true
-                                tap_action:
-                                  action: perform-action
-                                  perform_action: media_player.media_play_pause
-                                  target:
-                                    entity_id: media_player.roam
-                                  data: {}
-                                visibility:
-                                  - condition: state
-                                    entity_id: media_player.wohnzimmer
-                                    state:
-                                      - playing
-                              - icon: mdi:skip-next
-                                show_background: false
-                                tap_action:
-                                  action: perform-action
-                                  perform_action: media_player.media_next_track
-                                  target:
-                                    entity_id: media_player.roam
-                                  data: {}
-                            bottom:
-                              - entity: media_player.wohnzimmer
-                                sub_button_type: slider
-                                always_visible: true
-                          rows: '2.2'
-                          origami_media:
-                            compact: false
-                            collapse: true
-                  - type: vertical-stack
-                    cards:
-                      - type: custom:bubble-card
-                        card_type: separator
-                        name: Eingang
-                        modules:
-                          - origami_header
-                        origami_header:
-                          icon_size: var(--icon-size-s)
-                        grid_options:
-                          rows: auto
-                      - type: custom:bubble-card
-                        card_type: media-player
-                        button_type: state
-                        entity: media_player.eingang
-                        name: Eingang
-                        icon: mdi:speaker
-                        scrolling_effect: true
-                        modules:
-                          - origami_media
-                          - origami_base
-                        origami_base:
-                          solid_controls: false
-                          tile: false
-                          toggle: false
-                          compact: false
-                          group: true
-                        hide:
-                          power_button: true
-                          previous_button: true
-                          next_button: true
-                          volume_button: true
-                          play_pause_button: true
-                        tap_action:
-                          action: more-info
-                        button_action:
+                            action: fire-dom-event
+                            mini_popup: group
+                        - icon: mdi:dots-horizontal
+                          sub_button_type: default
+                          show_background: true
                           tap_action:
-                            action: more-info
-                        sub_button:
-                          main:
-                            - icon: mdi:play
-                              show_background: true
-                              tap_action:
-                                action: perform-action
-                                perform_action: media_player.media_play_pause
-                                target:
-                                  entity_id: media_player.eingang
-                                data: {}
-                              visibility:
-                                - condition: not
-                                  conditions:
-                                    - condition: state
-                                      entity_id: media_player.eingang
-                                      state:
-                                        - playing
-                            - icon: mdi:pause
-                              show_background: true
-                              tap_action:
-                                action: perform-action
-                                perform_action: media_player.media_play_pause
-                                target:
-                                  entity_id: media_player.eingang
-                                data: {}
-                              visibility:
-                                - condition: state
-                                  entity_id: media_player.eingang
-                                  state:
-                                    - playing
-                            - icon: mdi:skip-next
-                              show_background: false
-                              tap_action:
-                                action: perform-action
-                                perform_action: media_player.media_next_track
-                                target:
-                                  entity_id: media_player.eingang
-                                data: {}
-                          bottom:
-                            - entity: media_player.eingang
-                              sub_button_type: slider
-                              always_visible: true
-                        rows: '2.2'
-                        cover_background: false
-                        origami_media:
-                          compact: false
-                          collapse: true
-                        show_icon: true
-                        show_name: true
-                  - type: vertical-stack
-                    cards:
-                      - type: custom:bubble-card
-                        card_type: separator
-                        name: Büro
-                        modules:
-                          - origami_header
-                        origami_header:
-                          icon_size: var(--icon-size-s)
-                        grid_options:
-                          rows: auto
-                      - type: vertical-stack
-                        cards:
-                          - type: conditional
-                            conditions:
-                              - condition: not
-                                conditions:
-                                  - condition: state
-                                    entity_id: media_player.buro_lg_oled_b2
-                                    state:
-                                      - 'off'
-                                      - standby
-                                      - unavailable
-                                      - unknown
-                            card:
-                              type: custom:bubble-card
-                              card_type: media-player
-                              button_type: state
-                              entity: media_player.buro_lg_oled_b2
-                              name: TV
-                              icon: mdi:television
-                              modules:
-                                - origami_base
-                                - origami_media
-                              origami_media:
-                                layout: tv
-                              hide:
-                                power_button: true
-                                previous_button: true
-                                next_button: true
-                                volume_button: true
-                                play_pause_button: true
-                              tap_action:
-                                action: navigate
-                                navigation_path: '#popup_tv_b2'
-                              button_action:
-                                tap_action:
-                                  action: navigate
-                                  navigation_path: '#popup_tv_b2'
-                              sub_button:
-                                main:
-                                  - icon: mdi:power
-                                    show_background: true
-                                    tap_action:
-                                      action: perform-action
-                                      perform_action: media_player.toggle
-                                      target:
-                                        entity_id: media_player.buro_lg_oled_b2
-                                bottom:
-                                  - entity: media_player.buro
-                                    sub_button_type: slider
-                                    always_visible: true
-                              rows: '2.2'
-                          - type: conditional
-                            conditions:
-                              - condition: not
-                                conditions:
-                                  - condition: not
-                                    conditions:
-                                      - condition: state
-                                        entity_id: media_player.buro_lg_oled_b2
-                                        state:
-                                          - 'off'
-                                          - standby
-                                          - unavailable
-                                          - unknown
-                                  - condition: state
-                                    entity_id: media_player.buro
-                                    state:
-                                      - unavailable
-                                      - unknown
-                            card:
-                              type: custom:bubble-card
-                              card_type: media-player
-                              button_type: state
-                              entity: media_player.buro
-                              icon: mdi:speaker
-                              scrolling_effect: true
-                              modules:
-                                - origami_base
-                                - origami_media
+                            action: fire-dom-event
+                            mini_popup: more
+                      bottom:
+                        - name: Playback
+                          group:
+                            - icon: mdi:shuffle-variant
+                              sub_button_type: default
                               origami_base:
-                                group: true
-                              hide:
-                                power_button: true
-                                previous_button: true
-                                next_button: true
-                                volume_button: true
-                                play_pause_button: true
+                                dot: >-
+                                  ${(p => ['playing', 'paused'].includes(p?.state) && p.attributes.shuffle ===
+                                  true)(hass.states[states('input_select.selected_speaker')])}
+                                disabled: >-
+                                  ${(p => !['playing', 'paused'].includes(p?.state) || p.attributes.shuffle ===
+                                  undefined)(hass.states[states('input_select.selected_speaker')])}
                               tap_action:
-                                action: more-info
-                              button_action:
-                                tap_action:
-                                  action: more-info
-                              sub_button:
-                                main:
-                                  - icon: mdi:play
-                                    show_background: true
-                                    tap_action:
-                                      action: perform-action
-                                      perform_action: media_player.media_play_pause
-                                      target:
-                                        entity_id: media_player.buro
-                                      data: {}
-                                    visibility:
-                                      - condition: not
-                                        conditions:
-                                          - condition: state
-                                            entity_id: media_player.buro
-                                            state:
-                                              - playing
-                                  - icon: mdi:pause
-                                    show_background: true
-                                    tap_action:
-                                      action: perform-action
-                                      perform_action: media_player.media_play_pause
-                                      target:
-                                        entity_id: media_player.buro
-                                      data: {}
-                                    visibility:
-                                      - condition: state
-                                        entity_id: media_player.buro
-                                        state:
-                                          - playing
-                                  - icon: mdi:skip-next
-                                    show_background: false
-                                    tap_action:
-                                      action: perform-action
-                                      perform_action: media_player.media_next_track
-                                      target:
-                                        entity_id: media_player.buro
-                                      data: {}
-                                bottom:
-                                  - entity: media_player.buro
-                                    sub_button_type: slider
-                                    always_visible: true
-                              rows: '2.2'
-                              name: Playbase
-                              origami_media:
-                                collapse: true
-                          - type: custom:bubble-card
-                            card_type: sub-buttons
-                            modules:
-                              - origami_base
-                              - origami_button
-                            origami_base:
-                              animate: false
-                            origami_button:
-                              active_style: toggle
-                              columns: 3
-                              padding: var(--ha-space-1) 0 0 0
-                            sub_button:
-                              main: []
-                              bottom:
-                                - entity: switch.buro_loudness
-                                  name: Loudness
-                                  show_name: true
-                                  tap_action:
-                                    action: toggle
-                                - entity: switch.buro_nachtton
-                                  name: Nachtton
-                                  show_name: true
-                                  tap_action:
-                                    action: toggle
-                                - entity: switch.buro_sprachverbesserung
-                                  name: Sprache
-                                  show_name: true
-                                  tap_action:
-                                    action: toggle
-                            rows: 1
-            popup_mode: default
-            name: Lautsprecher
+                                action: perform-action
+                                perform_action: script.playback
+                                data:
+                                  speaker: input_select.selected_speaker
+                                  command: shuffle
+                            - icon: mdi:skip-previous
+                              sub_button_type: default
+                              origami_base:
+                                disabled: ${!['playing', 'paused'].includes(states(states('input_select.selected_speaker')))}
+                              tap_action:
+                                action: perform-action
+                                perform_action: script.playback
+                                data:
+                                  speaker: input_select.selected_speaker
+                                  command: previous_track
+                            - icon: mdi:play
+                              sub_button_type: default
+                              css_class: play
+                              origami_base:
+                                icon: "${states(states('input_select.selected_speaker')) === 'playing' ? 'mdi:pause' : ''}"
+                                disabled: ${!['playing', 'paused'].includes(states(states('input_select.selected_speaker')))}
+                              tap_action:
+                                action: perform-action
+                                perform_action: script.playback
+                                data:
+                                  speaker: input_select.selected_speaker
+                                  command: play_pause
+                            - icon: mdi:skip-next
+                              sub_button_type: default
+                              origami_base:
+                                disabled: ${!['playing', 'paused'].includes(states(states('input_select.selected_speaker')))}
+                              tap_action:
+                                action: perform-action
+                                perform_action: script.playback
+                                data:
+                                  speaker: input_select.selected_speaker
+                                  command: next_track
+                            - icon: mdi:heart-outline
+                              sub_button_type: default
+                              origami_base:
+                                icon: >-
+                                  ${(p => { const d = hass.entities?.[p?.entity_id]?.device_id; const b = d &&
+                                  Object.values(hass.entities).find((e) => e.platform === 'music_assistant' &&
+                                  e.translation_key === 'favorite_now_playing' && e.device_id === d); const a =
+                                  p?.attributes ?? {}; const start = Number.isFinite(a.media_position) &&
+                                  a.media_position_updated_at ? new Date(a.media_position_updated_at) -
+                                  a.media_position * 1000 : new Date(p?.last_changed); return b && new
+                                  Date(hass.states[b.entity_id]?.state) > start ? 'mdi:heart' : '';
+                                  })(hass.states[states('input_select.selected_speaker')])}
+                                disabled: >-
+                                  ${(p => !['playing', 'paused'].includes(p?.state) ||
+                                  !Object.values(hass.entities ?? {}).some((e) => e.platform === 'music_assistant' &&
+                                  e.translation_key === 'favorite_now_playing' && e.device_id ===
+                                  hass.entities?.[p.entity_id]?.device_id))(hass.states[states('input_select.selected_speaker')])}
+                              tap_action:
+                                action: perform-action
+                                perform_action: script.playback
+                                data:
+                                  speaker: input_select.selected_speaker
+                                  command: favorite
+                    styles: |-
+                      .bubble-sub-button-container .bubble-sub-button {
+                        --bubble-sub-button-height: var(--control-height-sm);
+                      }
+                      .bubble-sub-button-1 .bubble-sub-button-icon {
+                        --mdc-icon-size: var(--icon-size-s) !important;
+                      }
+                      ha-card .bubble-sub-button-bottom-container {
+                        margin-bottom: var(--ha-space-2) !important;
+                      }
+                      ha-card .bubble-name-container {
+                        margin-inline-end: var(--org-gap) !important;
+                      }
+
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: slider
+                    entity: number.group_volume
+                    name: "${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length ?? 0) > 1 ? 'Group ·' : ''}"
+                    show_name: true
+                    show_icon: false
+                    show_state: false
+                    scrolling_effect: false
+                    slider_value_position: right
+                    slider_live_update: false
+                    tap_action:
+                      action: none
+                    button_action:
+                      tap_action:
+                        action: none
+                    modules:
+                      - origami_base
+                      - origami_slider
+                    sub_button:
+                      main:
+                        - icon: mdi:chevron-down
+                          show_background: true
+                          origami_base:
+                            hidden: ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length ?? 0) < 2}
+                          tap_action:
+                            action: fire-dom-event
+                            mini_popup: volume
+
+                  - type: custom:bubble-card
+                    card_type: sub-buttons
+                    modules:
+                      - origami_button
+                    origami_base:
+                      hidden: ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length ?? 0) < 2}
+                    origami_button:
+                      background: false
+                      align: center
+                      icon_size: var(--icon-size-s)
+                      padding: var(--ha-space-3) 0 0
+                    sub_button:
+                      main: []
+                      bottom:
+                        - name: Ungroup
+                          icon: mdi:link-variant-off
+                          show_name: true
+                          origami_button:
+                            icon: "${states('script.group_speakers') === 'on' ? 'mdi:timer-sand' : ''}"
+                            disabled: ${states('script.group_speakers') === 'on'}
+                          tap_action:
+                            action: perform-action
+                            perform_action: script.group_speakers
+                            data:
+                              speaker: input_select.selected_speaker
+                              ungroup: true
         column_span: 1
         theme: Origami
       - type: grid
