@@ -580,21 +580,27 @@ script:
   # Everything off, at the bottom of a room pop-up
   room_off:
     alias: Raum aus
-    description: Turns off the lights, fans, media players and switches in an area.
+    description: Turns off the lights, media players and switches in one or multiple areas.
     fields:
       area:
-        description: The area
+        description: The area or areas
         example: living_room
         selector:
           area:
+            multiple: true
     sequence:
       - repeat:
-          for_each: [light, fan, media_player, switch]
+          for_each: "{{ [area] if area is string else area }}"
           sequence:
-            # Only domains that the area has. Calling a domain that is not set up would stop the script.
-            - if: "{{ expand(area_entities(area)) | selectattr('domain', 'eq', repeat.item) | list | count > 0 }}"
-              then:
-                - action: "{{ repeat.item }}.turn_off"
-                  target:
-                    area_id: "{{ area }}"
-                  continue_on_error: true
+            - variables:
+                current_area: "{{ repeat.item }}"
+            - repeat:
+                for_each: [light, media_player, switch]
+                sequence:
+                  # Only domains that the area has. Calling a domain that is not set up would stop the script.
+                  - if: "{{ expand(area_entities(current_area)) | selectattr('domain', 'eq', repeat.item) | list | count > 0 }}"
+                    then:
+                      - action: "{{ repeat.item }}.turn_off"
+                        target:
+                          area_id: "{{ current_area }}"
+                        continue_on_error: true
