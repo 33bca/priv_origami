@@ -13,10 +13,6 @@ input_boolean:
   all_rooms:
     name: All rooms
     icon: mdi:home-group
-  # Shows the scene buttons in the living room pop-up
-  living_room_scenes:
-    name: Living room scenes
-    icon: mdi:palette-outline
 
 input_select:
   # Fallback for the active speaker when nothing plays
