@@ -17,10 +17,6 @@ input_boolean:
   living_room_scenes:
     name: Living room scenes
     icon: mdi:palette-outline
-  # Shows the timer row in the fan pop-up
-  fan_popup_timer:
-    name: Fan pop-up timer
-    icon: mdi:timer-outline
 
 input_select:
   # Fallback for the active speaker when nothing plays
@@ -30,13 +26,6 @@ input_select:
       - media_player.living_room
       - media_player.bedroom
       - media_player.office
-
-# The fan pop-up uses this timer. An automation below turns the fan off when the timer ends.
-timer:
-  living_room_fan:
-    name: Living room fan timer
-    icon: mdi:timer-outline
-    restore: true
 
 template:
   - sensor:
@@ -509,24 +498,6 @@ template:
             {% endif %}
 
 script:
-  # Oscillation on or off, for the fan pop-up
-  fan_oscillation:
-    alias: Fan oscillation
-    description: Switches a fan's oscillation on or off.
-    fields:
-      fan:
-        description: The fan
-        example: fan.living_room
-        selector:
-          entity:
-            domain: fan
-    sequence:
-      - action: fan.oscillate
-        target:
-          entity_id: "{{ fan }}"
-        data:
-          oscillating: "{{ not state_attr(fan, 'oscillating') }}"
-
   # Volume in small steps, for the TV pop-up
   volume:
     alias: Volume
@@ -608,18 +579,3 @@ script:
                   target:
                     area_id: "{{ area }}"
                   continue_on_error: true
-
-automation:
-  # Turns the fan off when the fan pop-up's timer ends
-  - id: origami_living_room_fan_timer
-    alias: Living room fan timer
-    description: Turns the living room fan off when its timer finishes.
-    triggers:
-      - trigger: event
-        event_type: timer.finished
-        event_data:
-          entity_id: timer.living_room_fan
-    actions:
-      - action: fan.turn_off
-        target:
-          entity_id: fan.living_room
