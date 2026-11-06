@@ -22,6 +22,7 @@ Base draws the frame of button and media player cards and holds the helpers that
 | [Base](#base) | `origami_base` | button, media player, cover, climate, select, calendar, separator, sub-buttons, pop-up | The frame, text and color, and the shared options and helpers. On cover, climate, select and calendar cards, it styles only the sub-buttons. |
 | [Fan](#fan) | `origami_fan` | button | Spins the icon at the fan's speed. |
 | [Climate](#climate) | `origami_climate` | button | Shows what a thermostat does. |
+| [Cover](#cover) | `origami_cover` | button | Shows a cover's state and position, and disables keys at their targets. |
 | [Media](#media) | `origami_media` | media player | Shows speakers and TVs. |
 | [Slider](#slider) | `origami_slider` | button with a slider, sub-buttons | Turns a card into a standalone slider, or sub-buttons into rows with names, tracks and values. |
 | [Button](#button) | `origami_button` | sub-buttons, button | Rows and grids of buttons, segmented bars, tiles with labels and rows that scroll sideways. |
@@ -425,6 +426,12 @@ rows: 1.375
 The plus and minus buttons need their own actions, such as a script that moves the target by half a degree.
 
 </details>
+
+### Cover
+
+The Cover module formats a cover's state line with its position, chooses the open or closed icon, and dims keys when their targets are reached. Open and close keys stay active while the cover moves. A preset key dims when position and tilt are within 0.6 percentage points of their targets.
+
+The [cover card](../dashboard/cover/card.yaml) shows how to use the module.
 
 ### Media
 

@@ -110,6 +110,7 @@ The start page, from the greeting down to the navigation bar:
 - **[Favorites](dashboard/favorites/).** Tiles that come and go with what's happening.
 - **[Rooms](dashboard/rooms/).** Each room's climate and lights at a glance.
 - **[Climate table](dashboard/climate-table/).** Every room's climate in one table.
+- **[Cover](dashboard/cover/).** A cover's position and tilt, with open and close keys.
 - **[Navigation bar](dashboard/navigation-bar/).** The most used pop-ups within thumb's reach. Needs Navbar Card.
 
 ### Menu

@@ -1,0 +1,46 @@
+origami_cover:
+  name: "Origami • Cover"
+  version: "3.8.1"
+  supported:
+    - button
+  description: "Cover shows a cover's state and position, chooses its open or closed icon, and dims controls at their target. Moving covers stay active until they stop."
+  code: |-
+    ${(() => {
+      const org = card._org;
+      if (org?.hass !== hass || !(org.version >= 13)) throw new Error("origami_cover needs origami_base 13 or later");
+      const st = hass.states[entity];
+      const a = st?.attributes ?? {};
+      const state = String(st?.state ?? "unavailable").toLowerCase();
+      const moving = ["opening", "closing"].includes(state);
+      const position = a.current_position == null ? null : Number(a.current_position);
+      const tilt = a.current_tilt_position == null ? null : Number(a.current_tilt_position);
+      const closed = !moving && (a.is_closed === true || state === "closed" || (position != null && Number.isFinite(position) && position <= 0.6));
+      const line = st
+        ? [org.word(hass, st), !closed && !moving && Number.isFinite(position) ? org.num(hass, position, 0, "%") : ""].filter(org.has).join(" • ")
+        : "";
+      const stateLine = card.querySelector(".bubble-state");
+      if (stateLine && stateLine.textContent !== line) stateLine.textContent = line;
+      org.icon(icon, (closed ? this.config.icon_close : this.config.icon_open) ?? a.icon ?? (closed ? "mdi:roller-shade-closed" : "mdi:roller-shade"));
+
+      const controls = org.subs(org.env, this.config, "origami_base");
+      const disabled = [];
+      controls.forEach(({ n, item }) => {
+        const action = org.act(item);
+        const service = org.service(item);
+        const data = action.data ?? action.service_data ?? {};
+        const actionTargets = org.targets(item);
+        const targets = actionTargets.length
+          ? actionTargets
+          : [].concat(data.target_cover ?? []).map(String);
+        if (targets.length && !targets.includes(entity)) return;
+        const presetPosition = data.position == null ? null : Number(data.position);
+        const presetTilt = data.tilt_position == null ? null : Number(data.tilt_position);
+        const hasPreset = Number.isFinite(presetPosition) && Number.isFinite(presetTilt);
+        const atPreset = !moving && hasPreset && Number.isFinite(position) && Number.isFinite(tilt)
+          && Math.abs(position - presetPosition) <= 0.6 && Math.abs(tilt - presetTilt) <= 0.6;
+        const atOpen = !moving && (Number.isFinite(position) ? position >= 99.4 : state === "open");
+        const atClosed = closed;
+        if ((service === "cover.open_cover" && atOpen) || (service === "cover.close_cover" && atClosed) || atPreset) disabled.push(n);
+      });
+      return disabled.map((n) => `ha-card .bubble-sub-button-${n}, ha-card .bubble-sub-button-${n} .bubble-sub-button-icon:not(.hidden) { color: var(--disabled-color) !important; pointer-events: none !important; }`).join("\n");
+    })()}

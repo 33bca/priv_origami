@@ -1,0 +1,47 @@
+- type: custom:bubble-card
+  card_type: button
+  button_type: switch
+  entity: cover.living_room_blind
+  name: Living room
+  icon: mdi:roller-shade
+  icon_open: mdi:roller-shade
+  icon_close: mdi:roller-shade-closed
+  state_content: state
+  modules:
+    - origami_base
+    - origami_cover
+  origami_base:
+    group: true
+    tile: true
+  scrolling_effect: false
+  tap_action:
+    action: more-info
+  button_action:
+    tap_action:
+      action: more-info
+  sub_button:
+    main:
+      - icon: mdi:arrow-up
+        show_background: true
+        tap_action:
+          action: perform-action
+          perform_action: cover.open_cover
+          target:
+            entity_id: cover.living_room_blind
+      - icon: mdi:angle-acute
+        show_background: true
+        tap_action:
+          action: perform-action
+          perform_action: script.cover_preset
+          data:
+            target_cover: cover.living_room_blind
+            position: 1
+            tilt_position: 40
+      - icon: mdi:arrow-down
+        show_background: true
+        tap_action:
+          action: perform-action
+          perform_action: cover.close_cover
+          target:
+            entity_id: cover.living_room_blind
+  rows: 1.375

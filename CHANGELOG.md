@@ -45,6 +45,10 @@ These changes are in the `next` branch and come with the next release.
 - All cards share one number and date formatter, so they render with less work.
 - Sliders are never colored, also not for a light, because the state color belongs to the icon. A slider's fill is the theme's `fill-loud`, a stronger step of its track's tint, so it keeps its contrast on a card, a tile or a cover behind a pop-up.
 
+#### Cover
+
+- The new Cover module formats a cover's state and position, picks the open or closed icon, and dims open, close and preset keys at their targets. Moving covers stay active until they reach an endpoint.
+
 #### Media
 
 - Groups come from `group_members` and covers from the speaker's own picture, so Media works with any integration that reports them. The new `players`, `leader`, `art`, `inputs` and `icons` options cover other setups.

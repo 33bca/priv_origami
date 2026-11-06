@@ -60,7 +60,7 @@ if ARGS:
 # Modules: the basics, and no entity IDs, because modules stay general
 ENTITY = re.compile(r"(?<![\w.$-])(?:light|switch|sensor|binary_sensor|media_player|climate|fan|cover|vacuum|input_[a-z]+|script|scene|camera|weather|person|calendar|timer|counter|select|number|button|update|lock|alarm_control_panel|automation|remote|water_heater|humidifier|valve|image)\.[a-z0-9_]+(?![\w(.])")
 # Actions that modules compare against, which look like entity IDs
-ACTIONS = {"media_player.play_media"}
+ACTIONS = {"media_player.play_media", "cover.open_cover", "cover.close_cover"}
 COMMENTS = re.compile(r"/\*.*?\*/|(?<![:\"'\\])//[^\n]*", re.S)
 modules = sorted((ROOT / "bubble_card/modules").glob("*.yaml"))
 for path in modules:
@@ -181,7 +181,7 @@ for name in READMES:
 # Parts: each part's README has its sections in order, keeps everything optional out of Requirements and Setup,
 # and lists exactly the modules that its files use, with Base whenever there is one
 SECTIONS = ["Requirements", "Setup", "Optional", "Entities"]
-MODULE_NAMES = r"\b(Base|Fan|Climate|Media|Slider|Button|Header|Tiles|Table|Popup)\b"
+MODULE_NAMES = r"\b(Base|Fan|Climate|Cover|Media|Slider|Button|Header|Tiles|Table|Popup)\b"
 for readme in sorted((ROOT / "dashboard").glob("*/README.md")):
     where = str(readme.relative_to(ROOT))
     parts = re.split(r"^## (.+)$", re.sub(r"^[ \t]*```.*?^[ \t]*```", "", readme.read_text(encoding="utf-8"), flags=re.M | re.S), flags=re.M)
