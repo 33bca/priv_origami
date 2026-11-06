@@ -341,8 +341,8 @@ template:
         unique_id: living_room_scene
         icon: mdi:palette-outline
         state: >
-          {% if is_state('light.wohnzimmer_wohnzimmer_kuche_gang', 'on') %}
-            {% set current_scene = states('select.wohnzimmer_wohnzimmer_kuche_gang_szene') | lower %}
+          {% if is_state('light.wohnzimmer_wohnen', 'on') %}
+            {% set current_scene = states('select.wohnzimmer_wohnen_szene') | lower %}
             {% set mapping = [
               ('nightlight', 'nacht'),
               ('read', 'lesen'),
@@ -365,8 +365,8 @@ template:
         unique_id: balcony_scene
         icon: mdi:palette-outline
         state: >
-          {% if is_state('light.balkon', 'on') %}
-            {% set current_scene = states('select.balkon_szene') | lower %}
+          {% if is_state('light.balkon_raum', 'on') %}
+            {% set current_scene = states('select.balkon_raum_szene') | lower %}
             {% set mapping = {
               'nachtlicht': 'nacht',
             } %}
@@ -380,8 +380,8 @@ template:
         unique_id: bedroom_scene
         icon: mdi:palette-outline
         state: >
-          {% if is_state('light.schlafzimmer', 'on') %}
-            {% set current_scene = states('select.schlafzimmer_szene') | lower %}
+          {% if is_state('light.schlafzimmer_raum', 'on') %}
+            {% set current_scene = states('select.schlafzimmer_raum_szene') | lower %}
             {% set mapping = {
               'dark': 'nacht',
               'chillo mode': 'gemütlich',
@@ -396,8 +396,8 @@ template:
         unique_id: office_scene
         icon: mdi:palette-outline
         state: >
-          {% if is_state('light.buro', 'on') %}
-            {% set current_scene = states('select.buro_szene') | lower %}
+          {% if is_state('light.buro_raum', 'on') %}
+            {% set current_scene = states('select.buro_raum_szene') | lower %}
             {% set mapping = {
               'fuchsia frost': 'mood',
             } %}
@@ -411,8 +411,8 @@ template:
         unique_id: bathroom_scene
         icon: mdi:palette-outline
         state: >
-          {% if is_state('light.badezimmer', 'on') %}
-            {% set current_scene = states('select.badezimmer_szene') | lower %}
+          {% if is_state('light.badezimmer_raum', 'on') %}
+            {% set current_scene = states('select.badezimmer_raum_szene') | lower %}
             {% set mapping = {
               'ruhe': 'gemütlich',
             } %}
@@ -426,8 +426,8 @@ template:
         unique_id: shower_scene
         icon: mdi:palette-outline
         state: >
-          {% if is_state('light.dusche', 'on') %}
-            {% set current_scene = states('select.dusche_szene') | lower %}
+          {% if is_state('light.dusche_raum', 'on') %}
+            {% set current_scene = states('select.dusche_raum_szene') | lower %}
             {% set mapping = {
               'ruhe': 'gemütlich',
             } %}
@@ -441,8 +441,8 @@ template:
         unique_id: lights_on_count
         icon: mdi:lightbulb-group
         state: >
-          {{ ['light.wohnzimmer_wohnzimmer_kuche_gang', 'light.schlafzimmer', 'light.buro',
-              'light.badezimmer', 'light.balkon', 'light.dusche']
+          {{ ['light.wohnzimmer_wohnen', 'light.schlafzimmer_raum', 'light.buro_raum',
+              'light.badezimmer_raum', 'light.balkon_raum', 'light.dusche_raum']
              | select('is_state', 'on') | list | count }}
 
       - name: Aktive Lautsprecher Anzahl

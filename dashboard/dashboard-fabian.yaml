@@ -488,15 +488,25 @@ views:
                     'on': mdi:door-open
                     'off': mdi:door-closed
                 - name: temperature
-                  icon_template: "${attr.temp_rank === 'warmest' ? 'mdi:arrow-up' : attr.temp_rank === 'coldest' ? 'mdi:arrow-down' : 'mdi:thermometer'}"
-                  color_template: "${attr.temp_rank === 'coldest' ? 'var(--secondary-text-color)' : ''}"
+                  icon_template: >-
+                    ${attr.temp_rank === 'warmest' ? 'mdi:arrow-up' :
+                    attr.temp_rank === 'coldest' ? 'mdi:arrow-down' :
+                    'mdi:thermometer'}
+                  color_template: >-
+                    ${attr.temp_rank === 'coldest' ?
+                    'var(--secondary-text-color)' : ''}
                   text_template: ${num(attr.temperature)}°
-                  'on': "${attr.temp_rank === 'warmest'}"
+                  'on': ${attr.temp_rank === 'warmest'}
                 - name: humidity
-                  icon_template: "${attr.humidity_rank === 'most_humid' ? 'mdi:arrow-up' : attr.humidity_rank === 'driest' ? 'mdi:arrow-down' : 'mdi:water-percent'}"
-                  color_template: "${attr.humidity_rank === 'driest' ? 'var(--secondary-text-color)' : ''}"
+                  icon_template: >-
+                    ${attr.humidity_rank === 'most_humid' ? 'mdi:arrow-up' :
+                    attr.humidity_rank === 'driest' ? 'mdi:arrow-down' :
+                    'mdi:water-percent'}
+                  color_template: >-
+                    ${attr.humidity_rank === 'driest' ?
+                    'var(--secondary-text-color)' : ''}
                   text_template: ${num(attr.humidity, 0, '%')}
-                  'on': "${attr.humidity_rank === 'most_humid'}"
+                  'on': ${attr.humidity_rank === 'most_humid'}
             grid_options:
               columns: full
               rows: auto
@@ -653,7 +663,7 @@ views:
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
-                entity: light.wohnzimmer_wohnzimmer_kuche_gang
+                entity: light.wohnzimmer_wohnen
                 name: Wohnen
                 icon: mdi:sofa
                 modules:
@@ -729,7 +739,7 @@ views:
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
-                entity: light.schlafzimmer
+                entity: light.schlafzimmer_raum
                 name: Schlafen
                 icon: mdi:bed
                 modules:
@@ -767,7 +777,7 @@ views:
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
-                entity: light.buro
+                entity: light.buro_raum
                 name: Büro
                 icon: mdi:chair-rolling
                 modules:
@@ -805,7 +815,7 @@ views:
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
-                entity: light.badezimmer
+                entity: light.badezimmer_raum
                 name: Bad
                 icon: mdi:bathtub
                 modules:
@@ -838,7 +848,7 @@ views:
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
-                entity: light.dusche
+                entity: light.dusche_raum
                 name: Dusche
                 icon: mdi:toilet
                 modules:
@@ -1584,39 +1594,38 @@ views:
                 icon: mdi:pencil-outline
                 special: edit
             cards:
-              # The server card. Its name gives the most urgent problem, and the line below gives uptime.
-              # CPU and RAM open their details; a tap elsewhere opens the server pop-up.
               type: custom:bubble-card
               card_type: button
               button_type: state
               entity: sensor.system_monitor_betriebszeit
               icon: mdi:server
               name: >-
-                {%- set c = states('sensor.system_monitor_prozessornutzung') | float(-1) -%}
-                {%- set r = states('sensor.system_monitor_arbeitsspeicherauslastung') | float(-1) -%}
-                {%- set s = states('sensor.system_monitor_massenspeicher_auslastung') | float(-1) -%}
-                {%- set b = as_timestamp(states('sensor.backup_last_successful_automatic_backup'), default=none) -%}
-                {%- set a = (now().timestamp() - b) if b is not none else 0 -%}
-                {%- set u = states.update | selectattr('state', 'eq', 'on') | list | count -%}
-                {%- if s > 90 -%}Disk almost full
-                {%- elif r > 95 -%}Memory low
-                {%- elif c > 95 -%}CPU high
-                {%- elif a > 259200 -%}Backup due
-                {%- elif s > 80 -%}Disk almost full
-                {%- elif r > 85 -%}Memory low
-                {%- elif c > 80 -%}CPU high
-                {%- elif c < 0 and r < 0 and s < 0 -%}No data
-                {%- elif u > 0 -%}{{ u }} {{ 'update' if u == 1 else 'updates' }}
-                {%- else -%}All good
-                {%- endif -%}
+                {%- set c = states('sensor.system_monitor_prozessornutzung') |
+                float(-1) -%} {%- set r =
+                states('sensor.system_monitor_arbeitsspeicherauslastung') |
+                float(-1) -%} {%- set s =
+                states('sensor.system_monitor_massenspeicher_auslastung') |
+                float(-1) -%} {%- set b =
+                as_timestamp(states('sensor.backup_last_successful_automatic_backup'),
+                default=none) -%} {%- set a = (now().timestamp() - b) if b is
+                not none else 0 -%} {%- set u = states.update |
+                selectattr('state', 'eq', 'on') | list | count -%} {%- if s > 90
+                -%}Disk almost full {%- elif r > 95 -%}Memory low {%- elif c >
+                95 -%}CPU high {%- elif a > 259200 -%}Backup due {%- elif s > 80
+                -%}Disk almost full {%- elif r > 85 -%}Memory low {%- elif c >
+                80 -%}CPU high {%- elif c < 0 and r < 0 and s < 0 -%}No data {%-
+                elif u > 0 -%}{{ u }} {{ 'update' if u == 1 else 'updates' }}
+                {%- else -%}All good {%- endif -%}
               state_content: >-
-                {%- set n = as_timestamp(states('sensor.system_monitor_betriebszeit'), default=none) -%}
-                {%- set d = [(now().timestamp() - n) | int, 0] | max if n is not none else -1 -%}
-                {%- if d < 0 -%}Uptime unknown
-                {%- elif d >= 86400 -%}Up {{ d // 86400 }} {{ 'day' if d < 172800 else 'days' }}
-                {%- elif d >= 3600 -%}Up {{ d // 3600 }} {{ 'hour' if d < 7200 else 'hours' }}
-                {%- else -%}Up {{ [d // 60, 1] | max }} {{ 'minute' if d < 120 else 'minutes' }}
-                {%- endif -%}
+                {%- set n =
+                as_timestamp(states('sensor.system_monitor_betriebszeit'),
+                default=none) -%} {%- set d = [(now().timestamp() - n) | int, 0]
+                | max if n is not none else -1 -%} {%- if d < 0 -%}Uptime
+                unknown {%- elif d >= 86400 -%}Up {{ d // 86400 }} {{ 'day' if d
+                < 172800 else 'days' }} {%- elif d >= 3600 -%}Up {{ d // 3600 }}
+                {{ 'hour' if d < 7200 else 'hours' }} {%- else -%}Up {{ [d //
+                60, 1] | max }} {{ 'minute' if d < 120 else 'minutes' }} {%-
+                endif -%}
               scrolling_effect: false
               modules:
                 - origami_base
@@ -1631,8 +1640,10 @@ views:
                 main:
                   - entity: sensor.system_monitor_prozessornutzung
                     name: >-
-                      {%- set v = states('sensor.system_monitor_prozessornutzung') | float(none) -%}
-                      {{ ((v | round(0) | int) ~ ' %') if v is not none else '–' }}
+                      {%- set v =
+                      states('sensor.system_monitor_prozessornutzung') |
+                      float(none) -%} {{ ((v | round(0) | int) ~ ' %') if v is
+                      not none else '–' }}
                     show_name: true
                     show_icon: false
                     show_background: false
@@ -1640,8 +1651,10 @@ views:
                       action: more-info
                   - entity: sensor.system_monitor_arbeitsspeicherauslastung
                     name: >-
-                      {%- set v = states('sensor.system_monitor_arbeitsspeicherauslastung') | float(none) -%}
-                      {{ ((v | round(0) | int) ~ ' %') if v is not none else '–' }}
+                      {%- set v =
+                      states('sensor.system_monitor_arbeitsspeicherauslastung')
+                      | float(none) -%} {{ ((v | round(0) | int) ~ ' %') if v is
+                      not none else '–' }}
                     show_name: true
                     show_icon: false
                     show_background: false
@@ -1929,7 +1942,6 @@ views:
                               show_name: true
                               tap_action:
                                 action: toggle
-                        rows: 1.75
                   - type: vertical-stack
                     cards:
                       - type: custom:bubble-card
@@ -1943,7 +1955,7 @@ views:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: light.wohnzimmer_wohnzimmer_kuche_gang
+                            - entity: light.wohnzimmer_wohnen
                               icon: mdi:chevron-right
                               show_name: true
                               content_layout: icon-right
@@ -1959,7 +1971,7 @@ views:
                       - type: custom:bubble-card
                         card_type: button
                         button_type: switch
-                        entity: light.wohnzimmer_wohnzimmer_kuche_gang
+                        entity: light.wohnzimmer_wohnen
                         name: Alle
                         icon: mdi:lightbulb-multiple
                         modules:
@@ -1981,7 +1993,7 @@ views:
                                 action: perform-action
                                 perform_action: light.toggle
                                 target:
-                                  entity_id: light.wohnzimmer_wohnzimmer_kuche_gang
+                                  entity_id: light.wohnzimmer_wohnen
                                 data: {}
                         state_content:
                           - state
@@ -2007,7 +2019,8 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.wohnzimmer_wohnzimmer_kuche_gang_entspannen
+                                  entity_id:
+                                    - scene.wohnzimmer_wohnen_entspannen
                                 data: {}
                             - name: Ruhe
                               icon: mdi:weather-night-partly-cloudy
@@ -2016,7 +2029,8 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.wohnzimmer_wohnzimmer_kuche_gang_ruhe
+                                  entity_id:
+                                    - scene.wohnzimmer_wohnen_ruhe
                                 data: {}
                             - name: Nacht
                               icon: mdi:weather-night
@@ -2025,7 +2039,7 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.wohnzimmer_wohnzimmer_kuche_gang_nightlight
+                                  entity_id: scene.wohnzimmer_wohnen_nightlight
                                 data: {}
                             - name: Hell
                               icon: mdi:silverware-fork-knife
@@ -2034,9 +2048,8 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.wohnzimmer_wohnzimmer_kuche_gang_hell
+                                  entity_id: scene.wohnzimmer_wohnen_hell
                                 data: {}
-                        rows: 1.75
                   - type: vertical-stack
                     cards:
                       - type: custom:bubble-card
@@ -2147,7 +2160,8 @@ views:
                               action: navigate
                               navigation_path: '#popup_fan'
                           state_content: >-
-                            Stufe: {{ states('input_select.wohnzimmer_lufter_stufe') }}
+                            Stufe: {{
+                            states('input_select.wohnzimmer_lufter_stufe') }}
                           option_slider:
                             sliders:
                               - entity: input_select.wohnzimmer_lufter_stufe
@@ -2409,7 +2423,7 @@ views:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: light.wohnzimmer_wohnzimmer_kuche_gang
+                            - entity: light.balkon_raum
                               icon: mdi:chevron-right
                               show_name: true
                               content_layout: icon-right
@@ -2425,7 +2439,7 @@ views:
                       - type: custom:bubble-card
                         card_type: button
                         button_type: switch
-                        entity: light.balkon
+                        entity: light.balkon_raum
                         name: Alle
                         icon: mdi:lightbulb-multiple
                         modules:
@@ -2447,7 +2461,8 @@ views:
                                 action: perform-action
                                 perform_action: light.toggle
                                 target:
-                                  entity_id: light.balkon
+                                  entity_id:
+                                    - light.balkon_raum
                                 data: {}
                         state_content:
                           - state
@@ -2473,7 +2488,8 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.balkon_ruhe
+                                  entity_id:
+                                    - scene.balkon_raum_ruhe
                                 data: {}
                             - name: Nacht
                               icon: mdi:weather-night
@@ -2482,9 +2498,9 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.balkon_nachtlicht
+                                  entity_id:
+                                    - scene.balkon_raum_nachtlicht
                                 data: {}
-                        rows: 1
                   - type: vertical-stack
                     cards:
                       - type: custom:bubble-card
@@ -2872,7 +2888,7 @@ views:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: light.schlafzimmer
+                            - entity: light.schlafzimmer_raum
                               icon: mdi:chevron-right
                               show_name: true
                               content_layout: icon-right
@@ -2888,7 +2904,7 @@ views:
                       - type: custom:bubble-card
                         card_type: button
                         button_type: switch
-                        entity: light.schlafzimmer
+                        entity: light.schlafzimmer_raum
                         name: Alle
                         icon: mdi:lightbulb-multiple
                         modules:
@@ -2910,7 +2926,7 @@ views:
                                 action: perform-action
                                 perform_action: light.toggle
                                 target:
-                                  entity_id: light.schlafzimmer
+                                  entity_id: light.schlafzimmer_raum
                                 data: {}
                         state_content:
                           - state
@@ -2936,7 +2952,7 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.schlafzimmer_chillo_mode
+                                  entity_id: scene.schlafzimmer_raum_chillo_mode
                                 data: {}
                             - name: Nacht
                               icon: mdi:weather-night
@@ -2945,9 +2961,8 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.schlafzimmer_dark
+                                  entity_id: scene.schlafzimmer_raum_dark
                                 data: {}
-                        rows: 1
                   - type: vertical-stack
                     cards:
                       - type: custom:bubble-card
@@ -3281,7 +3296,7 @@ views:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: light.buro
+                            - entity: light.buro_raum
                               icon: mdi:chevron-right
                               show_name: true
                               content_layout: icon-right
@@ -3297,7 +3312,7 @@ views:
                       - type: custom:bubble-card
                         card_type: button
                         button_type: switch
-                        entity: light.buro
+                        entity: light.buro_raum
                         name: Alle
                         icon: mdi:lightbulb-multiple
                         modules:
@@ -3319,7 +3334,7 @@ views:
                                 action: perform-action
                                 perform_action: light.toggle
                                 target:
-                                  entity_id: light.buro
+                                  entity_id: light.buro_raum
                                 data: {}
                         state_content:
                           - state
@@ -3345,7 +3360,7 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.buro_bright
+                                  entity_id: scene.buro_raum_hell
                                 data: {}
                             - name: Mood
                               icon: mdi:weather-night
@@ -3354,9 +3369,8 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.buro_buro_fuchsia_frost
+                                  entity_id: scene.buro_raum_fuchsia_frost
                                 data: {}
-                        rows: 1
                   - type: vertical-stack
                     cards:
                       - type: custom:bubble-card
@@ -3523,7 +3537,7 @@ views:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: light.badezimmer
+                            - entity: light.badezimmer_raum
                               icon: mdi:chevron-right
                               show_name: true
                               content_layout: icon-right
@@ -3539,7 +3553,7 @@ views:
                       - type: custom:bubble-card
                         card_type: button
                         button_type: switch
-                        entity: light.badezimmer
+                        entity: light.badezimmer_raum
                         name: Alle
                         icon: mdi:lightbulb-multiple
                         modules:
@@ -3561,7 +3575,7 @@ views:
                                 action: perform-action
                                 perform_action: light.toggle
                                 target:
-                                  entity_id: light.badezimmer
+                                  entity_id: light.badezimmer_raum
                                 data: {}
                         state_content:
                           - state
@@ -3588,7 +3602,7 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.badezimmer_hell
+                                  entity_id: scene.badezimmer_raum_hell
                                 data: {}
                             - name: Gemütlich
                               icon: mdi:weather-night
@@ -3597,9 +3611,8 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.badezimmer_ruhephase
+                                  entity_id: scene.badezimmer_raum_ruhe
                                 data: {}
-                        rows: 1
                   - type: vertical-stack
                     cards:
                       - type: custom:bubble-card
@@ -3709,7 +3722,7 @@ views:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: light.dusche
+                            - entity: light.dusche_raum
                               icon: mdi:chevron-right
                               show_name: true
                               content_layout: icon-right
@@ -3725,7 +3738,7 @@ views:
                       - type: custom:bubble-card
                         card_type: button
                         button_type: switch
-                        entity: light.badezimmer
+                        entity: light.dusche_raum
                         name: Alle
                         icon: mdi:lightbulb-multiple
                         modules:
@@ -3747,7 +3760,7 @@ views:
                                 action: perform-action
                                 perform_action: light.toggle
                                 target:
-                                  entity_id: light.dusche
+                                  entity_id: light.dusche_raum
                                 data: {}
                         state_content:
                           - state
@@ -3773,7 +3786,7 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.dusche_hell
+                                  entity_id: scene.dusche_raum_hell
                                 data: {}
                             - name: Gemütlich
                               icon: mdi:weather-night
@@ -3782,9 +3795,8 @@ views:
                                 action: perform-action
                                 perform_action: scene.turn_on
                                 target:
-                                  entity_id: scene.dusche_ruhe
+                                  entity_id: scene.dusche_raum_ruhe
                                 data: {}
-                        rows: 1
                   - type: vertical-stack
                     cards:
                       - type: custom:bubble-card
@@ -3931,7 +3943,6 @@ views:
             cards:
               - type: vertical-stack
                 cards:
-                  # The TV card shows the app or the cast program, a power button and the speaker's volume
                   - type: custom:bubble-card
                     card_type: media-player
                     button_type: state
@@ -3942,7 +3953,6 @@ views:
                       - origami_base
                       - origami_media
                       - '!default'
-                    # The program's cover fills the icon and tints the card. Long app names get short words.
                     origami_media:
                       layout: tv
                       cover: icon background
@@ -3997,8 +4007,6 @@ views:
                           sub_button_type: slider
                           always_visible: true
                     rows: '2.2'
-
-                  # The row switches the TV's input, sends the TV's sound through the speaker and sets the volume in steps
                   - type: custom:bubble-card
                     card_type: sub-buttons
                     modules:
@@ -4022,7 +4030,6 @@ views:
                                   entity_id: remote.living_room_tv
                                 data:
                                   command: TV_INPUT
-                            # The button is filled while the speaker uses this source, because its tap selects it
                             - name: TV
                               show_name: true
                               tap_action:
@@ -4032,7 +4039,6 @@ views:
                                   entity_id: media_player.wohnzimmer
                                 data:
                                   source: Optical In
-                        # A tap changes the volume by 1%, a double tap by 5% and holding by 10%
                         - name: Volume
                           group:
                             - name: Quieter
@@ -4055,14 +4061,17 @@ views:
                                 data:
                                   speaker: media_player.wohnzimmer
                                   step: -0.1
-                            # The middle button shows the volume in percent, a dash while the speaker is off, or a muted icon. A tap mutes or unmutes the speaker.
                             - name: >-
-                                {% set s = 'media_player.wohnzimmer' %}{{ '–' if states(s) in ['unavailable', 'unknown', 'off']
-                                else '' if state_attr(s, 'is_volume_muted')
-                                else ((state_attr(s, 'volume_level') | float(0)) * 100) | round(0) | int }}
+                                {% set s = 'media_player.wohnzimmer' %}{{ '–' if
+                                states(s) in ['unavailable', 'unknown', 'off']
+                                else '' if state_attr(s, 'is_volume_muted') else
+                                ((state_attr(s, 'volume_level') | float(0)) *
+                                100) | round(0) | int }}
                               icon: >-
-                                {% set s = 'media_player.wohnzimmer' %}{{ 'mdi:volume-off' if states(s) not in ['unavailable', 'unknown', 'off']
-                                and state_attr(s, 'is_volume_muted') else '' }}
+                                {% set s = 'media_player.wohnzimmer' %}{{
+                                'mdi:volume-off' if states(s) not in
+                                ['unavailable', 'unknown', 'off'] and
+                                state_attr(s, 'is_volume_muted') else '' }}
                               show_name: true
                               tap_action:
                                 action: perform-action
@@ -4093,8 +4102,6 @@ views:
                                 data:
                                   speaker: media_player.wohnzimmer
                                   step: 0.1
-
-                  # The app buttons scroll sideways. A button is filled while the TV runs its app, because the TV reports the running app as its source.
                   - type: custom:bubble-card
                     card_type: sub-buttons
                     modules:
@@ -4160,8 +4167,24 @@ views:
                               entity_id: media_player.wohnzimmer_lg_oled_c5
                             data:
                               source: Plex
-
-                  # The remote has back and home buttons and a round pad with an OK button
+                        - name: Punktfunk
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: media_player.select_source
+                            target:
+                              entity_id: media_player.wohnzimmer_lg_oled_c5
+                            data:
+                              source: Punktfunk
+                        - name: Litefin
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: media_player.select_source
+                            target:
+                              entity_id: media_player.wohnzimmer_lg_oled_c5
+                            data:
+                              source: Litefin
                   - type: custom:bubble-card
                     card_type: sub-buttons
                     modules:
@@ -4172,8 +4195,7 @@ views:
                       align: center
                       icon_size: var(--icon-size-l)
                       padding: var(--ha-space-2) 0 0
-                    # The styles place the buttons by their css_class, draw the round pad and set the button sizes. They exist only on this card.
-                    styles: |-
+                    styles: >-
                       ha-card .bubble-sub-button-bottom-container {
                         display: grid !important;
                         grid-template-columns: minmax(0, 1fr) repeat(3, var(--control-height-lg)) minmax(0, 1fr);
@@ -4181,6 +4203,7 @@ views:
                         grid-template-areas: "back . up . home" ". left ok right ." ". . down . .";
                         place-items: center;
                       }
+
                       ha-card .bubble-sub-button-bottom-container::before {
                         content: "";
                         grid-area: 1 / 2 / 4 / 5;
@@ -4189,16 +4212,22 @@ views:
                         background-color: var(--fill-subtle);
                         box-shadow: var(--card-ring);
                       }
-                      ha-card .bubble-sub-button-bottom-container .bubble-sub-button {
+
+                      ha-card .bubble-sub-button-bottom-container
+                      .bubble-sub-button {
                         width: var(--control-height) !important;
                         height: var(--control-height) !important;
                         padding: 0 !important;
                         color: var(--primary-text-color) !important;
                       }
-                      ha-card .bubble-sub-button-bottom-container .bubble-sub-button .bubble-sub-button-icon:not(.hidden) {
+
+                      ha-card .bubble-sub-button-bottom-container
+                      .bubble-sub-button .bubble-sub-button-icon:not(.hidden) {
                         opacity: var(--opacity-strong) !important;
                       }
-                      ha-card .bubble-sub-button-bottom-container .bubble-sub-button:is(.back, .home) {
+
+                      ha-card .bubble-sub-button-bottom-container
+                      .bubble-sub-button:is(.back, .home) {
                         width: var(--control-height-sm) !important;
                         height: var(--control-height-sm) !important;
                         border-radius: var(--ha-card-border-radius) !important;
@@ -4206,24 +4235,35 @@ views:
                         box-shadow: var(--card-ring) !important;
                         --org-btn-icon-size: var(--icon-size-m);
                       }
-                      ha-card .bubble-sub-button-bottom-container .bubble-sub-button.ok {
+
+                      ha-card .bubble-sub-button-bottom-container
+                      .bubble-sub-button.ok {
                         width: var(--control-height-lg) !important;
                         height: var(--control-height-lg) !important;
                         border-radius: var(--radius-circle) !important;
                         background-color: var(--ha-card-background) !important;
                         box-shadow: var(--ha-card-box-shadow) !important;
                       }
-                      ha-card .bubble-sub-button-bottom-container .bubble-sub-button.ok .bubble-sub-button-name-container {
+
+                      ha-card .bubble-sub-button-bottom-container
+                      .bubble-sub-button.ok .bubble-sub-button-name-container {
                         font-size: var(--ha-font-size-m) !important;
                         font-weight: var(--ha-font-weight-bold) !important;
                         opacity: var(--opacity-muted) !important;
                       }
+
                       .back { grid-area: back; justify-self: start; }
+
                       .home { grid-area: home; justify-self: end; }
+
                       .up { grid-area: up; }
+
                       .left { grid-area: left; }
+
                       .ok { grid-area: ok; }
+
                       .right { grid-area: right; }
+
                       .down { grid-area: down; }
                     sub_button:
                       main: []
@@ -4233,71 +4273,71 @@ views:
                           icon: mdi:arrow-left
                           tap_action:
                             action: perform-action
-                            perform_action: remote.send_command
+                            perform_action: webostv_classic.button
                             target:
-                              entity_id: remote.living_room_tv
+                              entity_id: media_player.wohnzimmer_lg_oled_c5
                             data:
-                              command: BACK
+                              button: BACK
                         - name: Home
                           css_class: home
                           icon: mdi:home
                           tap_action:
                             action: perform-action
-                            perform_action: remote.send_command
+                            perform_action: webostv_classic.button
                             target:
-                              entity_id: remote.living_room_tv
+                              entity_id: media_player.wohnzimmer_lg_oled_c5
                             data:
-                              command: HOME
+                              button: HOME
                         - name: Up
                           css_class: up
                           icon: mdi:chevron-up
                           tap_action:
                             action: perform-action
-                            perform_action: remote.send_command
+                            perform_action: webostv_classic.button
                             target:
-                              entity_id: remote.living_room_tv
+                              entity_id: media_player.wohnzimmer_lg_oled_c5
                             data:
-                              command: DPAD_UP
+                              button: UP
                         - name: Left
                           css_class: left
                           icon: mdi:chevron-left
                           tap_action:
                             action: perform-action
-                            perform_action: remote.send_command
+                            perform_action: webostv_classic.button
                             target:
-                              entity_id: remote.living_room_tv
+                              entity_id: media_player.wohnzimmer_lg_oled_c5
                             data:
-                              command: DPAD_LEFT
+                              button: LEFT
                         - name: OK
                           css_class: ok
                           show_name: true
                           tap_action:
                             action: perform-action
-                            perform_action: remote.send_command
+                            perform_action: webostv_classic.button
                             target:
-                              entity_id: remote.living_room_tv
+                              entity_id: media_player.wohnzimmer_lg_oled_c5
                             data:
-                              command: DPAD_CENTER
+                              button: ENTER
                         - name: Right
                           css_class: right
                           icon: mdi:chevron-right
                           tap_action:
                             action: perform-action
-                            perform_action: remote.send_command
+                            perform_action: webostv_classic.button
                             target:
-                              entity_id: remote.living_room_tv
+                              entity_id: media_player.wohnzimmer_lg_oled_c5
                             data:
-                              command: DPAD_RIGHT
+                              button: RIGHT
                         - name: Down
                           css_class: down
                           icon: mdi:chevron-down
                           tap_action:
                             action: perform-action
-                            perform_action: remote.send_command
+                            perform_action: webostv_classic.button
                             target:
-                              entity_id: remote.living_room_tv
+                              entity_id: media_player.wohnzimmer_lg_oled_c5
                             data:
-                              command: DPAD_DOWN
+                              button: DOWN
           - type: custom:bubble-card
             card_type: pop-up
             hash: '#popup_lock'
@@ -4553,32 +4593,42 @@ views:
                           name: Hauptbürste
                           icon: mdi:brush
                           origami_tiles:
-                            state: "${Number(state) <= 0 ? 'Fällig' : num(state, 0, attr.unit_of_measurement)}"
-                            state_color: "${Number(state) <= 0 ? 'var(--error-color)' : ''}"
+                            state: >-
+                              ${Number(state) <= 0 ? 'Fällig' : num(state, 0,
+                              attr.unit_of_measurement)}
+                            state_color: '${Number(state) <= 0 ? ''var(--error-color)'' : ''''}'
                         - entity: sensor.r2_d2_verbleibende_zeit_der_seitenburste
                           name: Seitenbürste
                           icon: mdi:rotate-right
                           origami_tiles:
-                            state: "${Number(state) <= 0 ? 'Fällig' : num(state, 0, attr.unit_of_measurement)}"
-                            state_color: "${Number(state) <= 0 ? 'var(--error-color)' : ''}"
+                            state: >-
+                              ${Number(state) <= 0 ? 'Fällig' : num(state, 0,
+                              attr.unit_of_measurement)}
+                            state_color: '${Number(state) <= 0 ? ''var(--error-color)'' : ''''}'
                         - entity: sensor.r2_d2_verbleibende_filterzeit
                           name: Filter
                           icon: mdi:air-filter
                           origami_tiles:
-                            state: "${Number(state) <= 0 ? 'Fällig' : num(state, 0, attr.unit_of_measurement)}"
-                            state_color: "${Number(state) <= 0 ? 'var(--error-color)' : ''}"
+                            state: >-
+                              ${Number(state) <= 0 ? 'Fällig' : num(state, 0,
+                              attr.unit_of_measurement)}
+                            state_color: '${Number(state) <= 0 ? ''var(--error-color)'' : ''''}'
                         - entity: sensor.r2_d2_verbleibende_sensorzeit
                           name: Sensoren
                           icon: mdi:leak
                           origami_tiles:
-                            state: "${Number(state) <= 0 ? 'Fällig' : num(state, 0, attr.unit_of_measurement)}"
-                            state_color: "${Number(state) <= 0 ? 'var(--error-color)' : ''}"
+                            state: >-
+                              ${Number(state) <= 0 ? 'Fällig' : num(state, 0,
+                              attr.unit_of_measurement)}
+                            state_color: '${Number(state) <= 0 ? ''var(--error-color)'' : ''''}'
                         - entity: sensor.r2_d2_dock_schmutzfanger_verbleibend
                           name: Dock-Schmutzfänger
                           icon: mdi:delete-outline
                           origami_tiles:
-                            state: "${Number(state) <= 0 ? 'Fällig' : num(state, 0, attr.unit_of_measurement)}"
-                            state_color: "${Number(state) <= 0 ? 'var(--error-color)' : ''}"
+                            state: >-
+                              ${Number(state) <= 0 ? 'Fällig' : num(state, 0,
+                              attr.unit_of_measurement)}
+                            state_color: '${Number(state) <= 0 ? ''var(--error-color)'' : ''''}'
             sub_button:
               main: []
               bottom: []
@@ -4589,7 +4639,7 @@ views:
                     card_type: button
                     button_type: name
                     entity: vacuum.r2_d2
-                    name: "{{ state_translated('vacuum.r2_d2') }}"
+                    name: '{{ state_translated(''vacuum.r2_d2'') }}'
                     icon: mdi:robot-vacuum
                     state_content: last_changed
                     modules:
@@ -4609,7 +4659,9 @@ views:
                           show_background: false
                           origami_base:
                             name: ${num(state, 0, '%') || '–'}
-                            label: "${states('binary_sensor.r2_d2_ladestatus') === 'on' ? 'Lädt' : 'Akku'}"
+                            label: >-
+                              ${states('binary_sensor.r2_d2_ladestatus') ===
+                              'on' ? 'Lädt' : 'Akku'}
                           tap_action:
                             action: more-info
                       bottom:
@@ -4619,9 +4671,9 @@ views:
                               icon: mdi:play
                               show_name: true
                               origami_base:
-                                name: "${state === 'paused' ? 'Fortsetzen' : ''}"
-                                hidden: "${state === 'cleaning'}"
-                                disabled: "${['unavailable', 'unknown'].includes(state)}"
+                                name: '${state === ''paused'' ? ''Fortsetzen'' : ''''}'
+                                hidden: ${state === 'cleaning'}
+                                disabled: ${['unavailable', 'unknown'].includes(state)}
                                 'on': true
                               tap_action:
                                 action: perform-action
@@ -4632,7 +4684,7 @@ views:
                               icon: mdi:pause
                               show_name: true
                               origami_base:
-                                hidden: "${state !== 'cleaning'}"
+                                hidden: ${state !== 'cleaning'}
                                 'on': true
                               tap_action:
                                 action: perform-action
@@ -4643,8 +4695,10 @@ views:
                               icon: mdi:home-import-outline
                               fill_width: false
                               origami_base:
-                                disabled: "${['docked', 'unavailable', 'unknown'].includes(state)}"
-                                'on': "${state === 'returning'}"
+                                disabled: >-
+                                  ${['docked', 'unavailable',
+                                  'unknown'].includes(state)}
+                                'on': ${state === 'returning'}
                               tap_action:
                                 action: perform-action
                                 perform_action: vacuum.return_to_base
@@ -4654,7 +4708,9 @@ views:
                               icon: mdi:stop
                               fill_width: false
                               origami_base:
-                                disabled: "${!['cleaning', 'paused', 'returning'].includes(state)}"
+                                disabled: >-
+                                  ${!['cleaning', 'paused',
+                                  'returning'].includes(state)}
                                 'on': false
                               tap_action:
                                 action: perform-action
@@ -4686,8 +4742,9 @@ views:
                               'sensor.r2_d2_verbleibende_zeit_der_seitenburste',
                               'sensor.r2_d2_verbleibende_filterzeit',
                               'sensor.r2_d2_verbleibende_sensorzeit',
-                              'sensor.r2_d2_dock_schmutzfanger_verbleibend'].some((id) =>
-                              Number(states(id)) <= 0) ? 'var(--error-color)' : ''}
+                              'sensor.r2_d2_dock_schmutzfanger_verbleibend'].some((id)
+                              => Number(states(id)) <= 0) ? 'var(--error-color)'
+                              : ''}
                           tap_action:
                             action: fire-dom-event
                             mini_popup: maintenance
@@ -4875,7 +4932,9 @@ views:
                             icon: mdi:link-variant-off
                             show_name: true
                             origami_header:
-                              icon: "${states('script.group_speakers') === 'on' ? 'mdi:timer-sand' : ''}"
+                              icon: >-
+                                ${states('script.group_speakers') === 'on' ?
+                                'mdi:timer-sand' : ''}
                               disabled: ${states('script.group_speakers') === 'on'}
                               hidden: >-
                                 ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length
@@ -4892,10 +4951,15 @@ views:
                         - origami_button
                       origami_base:
                         hidden: >-
-                          ${(group => (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).every((s) =>
-                          group.includes(s) || ['playing', 'buffering', 'unavailable', 'unknown'].includes(states(s))
-                          || /bluetooth|optical|coax|hdmi|line|aux/i.test(hass.states[s]?.attributes?.source ??
-                          '')))(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? [states('input_select.selected_speaker')])}
+                          ${(group =>
+                          (hass.states['input_select.selected_speaker']?.attributes?.options
+                          ?? []).every((s) => group.includes(s) || ['playing',
+                          'buffering', 'unavailable',
+                          'unknown'].includes(states(s)) ||
+                          /bluetooth|optical|coax|hdmi|line|aux/i.test(hass.states[s]?.attributes?.source
+                          ??
+                          '')))(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members
+                          ?? [states('input_select.selected_speaker')])}
                       origami_button:
                         columns: 1
                         align: center
@@ -4932,7 +4996,9 @@ views:
                           - entity: media_player.wohnzimmer
                             show_icon: false
                             origami_tiles:
-                              'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? []).includes(entity)}
+                              'on': >-
+                                ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members
+                                ?? []).includes(entity)}
                             visibility:
                               - condition: state
                                 entity: input_select.selected_speaker
@@ -4946,7 +5012,9 @@ views:
                           - entity: media_player.roam
                             show_icon: false
                             origami_tiles:
-                              'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? []).includes(entity)}
+                              'on': >-
+                                ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members
+                                ?? []).includes(entity)}
                             visibility:
                               - condition: state
                                 entity: input_select.selected_speaker
@@ -4960,7 +5028,9 @@ views:
                           - entity: media_player.buro
                             show_icon: false
                             origami_tiles:
-                              'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? []).includes(entity)}
+                              'on': >-
+                                ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members
+                                ?? []).includes(entity)}
                             visibility:
                               - condition: state
                                 entity: input_select.selected_speaker
@@ -4974,7 +5044,9 @@ views:
                           - entity: media_player.eingang
                             show_icon: false
                             origami_tiles:
-                              'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members ?? []).includes(entity)}
+                              'on': >-
+                                ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members
+                                ?? []).includes(entity)}
                             visibility:
                               - condition: state
                                 entity: input_select.selected_speaker
@@ -5038,8 +5110,10 @@ views:
                           visibility:
                             - condition: template
                               value_template: >-
-                                {% set s = states('input_select.selected_speaker') %}
-                                {{ 'media_player.wohnzimmer' in (state_attr(s, 'group_members') or [s]) }}
+                                {% set s =
+                                states('input_select.selected_speaker') %} {{
+                                'media_player.wohnzimmer' in (state_attr(s,
+                                'group_members') or [s]) }}
                         - entity: media_player.roam
                           sub_button_type: slider
                           always_visible: true
@@ -5047,8 +5121,10 @@ views:
                           visibility:
                             - condition: template
                               value_template: >-
-                                {% set s = states('input_select.selected_speaker') %}
-                                {{ 'media_player.roam' in (state_attr(s, 'group_members') or [s]) }}
+                                {% set s =
+                                states('input_select.selected_speaker') %} {{
+                                'media_player.roam' in (state_attr(s,
+                                'group_members') or [s]) }}
                         - entity: media_player.buro
                           sub_button_type: slider
                           always_visible: true
@@ -5056,8 +5132,10 @@ views:
                           visibility:
                             - condition: template
                               value_template: >-
-                                {% set s = states('input_select.selected_speaker') %}
-                                {{ 'media_player.buro' in (state_attr(s, 'group_members') or [s]) }}
+                                {% set s =
+                                states('input_select.selected_speaker') %} {{
+                                'media_player.buro' in (state_attr(s,
+                                'group_members') or [s]) }}
                         - entity: media_player.eingang
                           sub_button_type: slider
                           always_visible: true
@@ -5065,8 +5143,10 @@ views:
                           visibility:
                             - condition: template
                               value_template: >-
-                                {% set s = states('input_select.selected_speaker') %}
-                                {{ 'media_player.eingang' in (state_attr(s, 'group_members') or [s]) }}
+                                {% set s =
+                                states('input_select.selected_speaker') %} {{
+                                'media_player.eingang' in (state_attr(s,
+                                'group_members') or [s]) }}
                 more:
                   width: fit-content
                   max_height: 320px
@@ -5087,10 +5167,13 @@ views:
                             icon: mdi:bluetooth
                             show_name: true
                             origami_button:
-                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                              hidden: >-
+                                ${states('input_select.selected_speaker') !==
+                                'media_player.wohnzimmer'}
                               disabled: >-
-                                ${(hass.states['media_player.wohnzimmer']?.attributes?.group_members?.[0] ??
-                                'media_player.wohnzimmer') !== 'media_player.wohnzimmer'}
+                                ${(hass.states['media_player.wohnzimmer']?.attributes?.group_members?.[0]
+                                ?? 'media_player.wohnzimmer') !==
+                                'media_player.wohnzimmer'}
                             tap_action:
                               action: perform-action
                               perform_action: media_player.select_source
@@ -5102,10 +5185,13 @@ views:
                             icon: mdi:television-classic
                             show_name: true
                             origami_button:
-                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                              hidden: >-
+                                ${states('input_select.selected_speaker') !==
+                                'media_player.wohnzimmer'}
                               disabled: >-
-                                ${(hass.states['media_player.wohnzimmer']?.attributes?.group_members?.[0] ??
-                                'media_player.wohnzimmer') !== 'media_player.wohnzimmer'}
+                                ${(hass.states['media_player.wohnzimmer']?.attributes?.group_members?.[0]
+                                ?? 'media_player.wohnzimmer') !==
+                                'media_player.wohnzimmer'}
                             tap_action:
                               action: perform-action
                               perform_action: media_player.select_source
@@ -5117,42 +5203,54 @@ views:
                             name: Loudness
                             show_name: true
                             origami_button:
-                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                              hidden: >-
+                                ${states('input_select.selected_speaker') !==
+                                'media_player.wohnzimmer'}
                             tap_action:
                               action: toggle
                           - entity: switch.wohnzimmer_nachtton
                             name: Nachtton
                             show_name: true
                             origami_button:
-                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                              hidden: >-
+                                ${states('input_select.selected_speaker') !==
+                                'media_player.wohnzimmer'}
                             tap_action:
                               action: toggle
                           - entity: switch.wohnzimmer_sprachverbesserung
                             name: Sprache
                             show_name: true
                             origami_button:
-                              hidden: ${states('input_select.selected_speaker') !== 'media_player.wohnzimmer'}
+                              hidden: >-
+                                ${states('input_select.selected_speaker') !==
+                                'media_player.wohnzimmer'}
                             tap_action:
                               action: toggle
                           - entity: switch.buro_loudness
                             name: Loudness
                             show_name: true
                             origami_button:
-                              hidden: ${states('input_select.selected_speaker') !== 'media_player.buro'}
+                              hidden: >-
+                                ${states('input_select.selected_speaker') !==
+                                'media_player.buro'}
                             tap_action:
                               action: toggle
                           - entity: switch.buro_nachtton
                             name: Nachtton
                             show_name: true
                             origami_button:
-                              hidden: ${states('input_select.selected_speaker') !== 'media_player.buro'}
+                              hidden: >-
+                                ${states('input_select.selected_speaker') !==
+                                'media_player.buro'}
                             tap_action:
                               action: toggle
                           - entity: switch.buro_sprachverbesserung
                             name: Sprache
                             show_name: true
                             origami_button:
-                              hidden: ${states('input_select.selected_speaker') !== 'media_player.buro'}
+                              hidden: >-
+                                ${states('input_select.selected_speaker') !==
+                                'media_player.buro'}
                             tap_action:
                               action: toggle
             sub_button:
@@ -5165,13 +5263,19 @@ views:
                   show_name: false
                   show_background: true
                   origami_popup:
-                    name: "${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' : '') + name(entity)}"
+                    name: >-
+                      ${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' :
+                      '') + name(entity)}
                     color: var(--media-color)
                     hidden: >-
-                      ${(() => { const sel = states('input_select.selected_speaker');
-                      const lead = (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
-                      return (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).find((s) => s !== lead
-                      && (hass.states[s]?.attributes?.group_members ?? [s])[0] === s && states(s) === 'playing'); })() !== entity}
+                      ${(() => { const sel =
+                      states('input_select.selected_speaker'); const lead =
+                      (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
+                      return
+                      (hass.states['input_select.selected_speaker']?.attributes?.options
+                      ?? []).find((s) => s !== lead &&
+                      (hass.states[s]?.attributes?.group_members ?? [s])[0] ===
+                      s && states(s) === 'playing'); })() !== entity}
                   tap_action:
                     action: perform-action
                     perform_action: input_select.select_option
@@ -5184,13 +5288,19 @@ views:
                   show_name: false
                   show_background: true
                   origami_popup:
-                    name: "${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' : '') + name(entity)}"
+                    name: >-
+                      ${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' :
+                      '') + name(entity)}
                     color: var(--media-color)
                     hidden: >-
-                      ${(() => { const sel = states('input_select.selected_speaker');
-                      const lead = (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
-                      return (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).find((s) => s !== lead
-                      && (hass.states[s]?.attributes?.group_members ?? [s])[0] === s && states(s) === 'playing'); })() !== entity}
+                      ${(() => { const sel =
+                      states('input_select.selected_speaker'); const lead =
+                      (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
+                      return
+                      (hass.states['input_select.selected_speaker']?.attributes?.options
+                      ?? []).find((s) => s !== lead &&
+                      (hass.states[s]?.attributes?.group_members ?? [s])[0] ===
+                      s && states(s) === 'playing'); })() !== entity}
                   tap_action:
                     action: perform-action
                     perform_action: input_select.select_option
@@ -5203,13 +5313,19 @@ views:
                   show_name: false
                   show_background: true
                   origami_popup:
-                    name: "${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' : '') + name(entity)}"
+                    name: >-
+                      ${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' :
+                      '') + name(entity)}
                     color: var(--media-color)
                     hidden: >-
-                      ${(() => { const sel = states('input_select.selected_speaker');
-                      const lead = (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
-                      return (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).find((s) => s !== lead
-                      && (hass.states[s]?.attributes?.group_members ?? [s])[0] === s && states(s) === 'playing'); })() !== entity}
+                      ${(() => { const sel =
+                      states('input_select.selected_speaker'); const lead =
+                      (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
+                      return
+                      (hass.states['input_select.selected_speaker']?.attributes?.options
+                      ?? []).find((s) => s !== lead &&
+                      (hass.states[s]?.attributes?.group_members ?? [s])[0] ===
+                      s && states(s) === 'playing'); })() !== entity}
                   tap_action:
                     action: perform-action
                     perform_action: input_select.select_option
@@ -5222,13 +5338,19 @@ views:
                   show_name: false
                   show_background: true
                   origami_popup:
-                    name: "${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' : '') + name(entity)}"
+                    name: >-
+                      ${((attr.group_members?.length ?? 0) > 1 ? 'Group · ' :
+                      '') + name(entity)}
                     color: var(--media-color)
                     hidden: >-
-                      ${(() => { const sel = states('input_select.selected_speaker');
-                      const lead = (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
-                      return (hass.states['input_select.selected_speaker']?.attributes?.options ?? []).find((s) => s !== lead
-                      && (hass.states[s]?.attributes?.group_members ?? [s])[0] === s && states(s) === 'playing'); })() !== entity}
+                      ${(() => { const sel =
+                      states('input_select.selected_speaker'); const lead =
+                      (hass.states[sel]?.attributes?.group_members ?? [sel])[0];
+                      return
+                      (hass.states['input_select.selected_speaker']?.attributes?.options
+                      ?? []).find((s) => s !== lead &&
+                      (hass.states[s]?.attributes?.group_members ?? [s])[0] ===
+                      s && states(s) === 'playing'); })() !== entity}
                   tap_action:
                     action: perform-action
                     perform_action: input_select.select_option
@@ -5246,10 +5368,14 @@ views:
                     entity: input_select.selected_speaker
                     icon: mdi:music-note
                     name: >-
-                      ${(p => (src => !p || ['unavailable', 'unknown'].includes(p.state) ? 'Unavailable'
-                      : /bluetooth|optical|coax|hdmi|line|aux|\btv\b/i.test(src) ? format(p.entity_id, 'source')
-                      : 'Nothing playing')(String(p?.attributes?.source ?? '')))(hass.states[(s =>
-                      hass.states[s]?.attributes?.group_members?.[0] ?? s)(states('input_select.selected_speaker'))])}
+                      ${(p => (src => !p || ['unavailable',
+                      'unknown'].includes(p.state) ? 'Unavailable' :
+                      /bluetooth|optical|coax|hdmi|line|aux|\btv\b/i.test(src) ?
+                      format(p.entity_id, 'source') : 'Nothing
+                      playing')(String(p?.attributes?.source ??
+                      '')))(hass.states[(s =>
+                      hass.states[s]?.attributes?.group_members?.[0] ??
+                      s)(states('input_select.selected_speaker'))])}
                     modules:
                       - origami_base
                       - origami_media
@@ -5274,13 +5400,18 @@ views:
                         Optical In: TV
                     origami_media:
                       cover: above
-                      leader: ${(s => hass.states[s]?.attributes?.group_members?.[0] ?? s)(states('input_select.selected_speaker'))}
+                      leader: >-
+                        ${(s => hass.states[s]?.attributes?.group_members?.[0]
+                        ?? s)(states('input_select.selected_speaker'))}
                       state: >-
-                        ${(p => (src => !p || ['unavailable', 'unknown'].includes(p.state) ? 'Unavailable'
-                        : /bluetooth/i.test(src) ? 'Played from a phone'
-                        : /optical|coax|hdmi|line|aux|\btv\b/i.test(src) ? format(p.entity_id, 'source')
-                        : '')(String(p?.attributes?.source ?? '')))(hass.states[(s =>
-                        hass.states[s]?.attributes?.group_members?.[0] ?? s)(states('input_select.selected_speaker'))])}
+                        ${(p => (src => !p || ['unavailable',
+                        'unknown'].includes(p.state) ? 'Unavailable' :
+                        /bluetooth/i.test(src) ? 'Played from a phone' :
+                        /optical|coax|hdmi|line|aux|\btv\b/i.test(src) ?
+                        format(p.entity_id, 'source') :
+                        '')(String(p?.attributes?.source ?? '')))(hass.states[(s
+                        => hass.states[s]?.attributes?.group_members?.[0] ??
+                        s)(states('input_select.selected_speaker'))])}
                       icons:
                         bluetooth: mdi:bluetooth
                         tv: mdi:television
@@ -5305,7 +5436,9 @@ views:
                           sub_button_type: default
                           show_background: true
                           origami_base:
-                            'on': ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length ?? 0) > 1}
+                            'on': >-
+                              ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length
+                              ?? 0) > 1}
                           tap_action:
                             action: fire-dom-event
                             mini_popup: group
@@ -5322,10 +5455,14 @@ views:
                               sub_button_type: default
                               origami_base:
                                 dot: >-
-                                  ${(p => ['playing', 'paused'].includes(p?.state) && p.attributes.shuffle ===
+                                  ${(p => ['playing',
+                                  'paused'].includes(p?.state) &&
+                                  p.attributes.shuffle ===
                                   true)(hass.states[states('input_select.selected_speaker')])}
                                 disabled: >-
-                                  ${(p => !['playing', 'paused'].includes(p?.state) || p.attributes.shuffle ===
+                                  ${(p => !['playing',
+                                  'paused'].includes(p?.state) ||
+                                  p.attributes.shuffle ===
                                   undefined)(hass.states[states('input_select.selected_speaker')])}
                               tap_action:
                                 action: perform-action
@@ -5336,7 +5473,9 @@ views:
                             - icon: mdi:skip-previous
                               sub_button_type: default
                               origami_base:
-                                disabled: ${!['playing', 'paused'].includes(states(states('input_select.selected_speaker')))}
+                                disabled: >-
+                                  ${!['playing',
+                                  'paused'].includes(states(states('input_select.selected_speaker')))}
                               tap_action:
                                 action: perform-action
                                 perform_action: script.playback
@@ -5347,8 +5486,12 @@ views:
                               sub_button_type: default
                               css_class: play
                               origami_base:
-                                icon: "${states(states('input_select.selected_speaker')) === 'playing' ? 'mdi:pause' : ''}"
-                                disabled: ${!['playing', 'paused'].includes(states(states('input_select.selected_speaker')))}
+                                icon: >-
+                                  ${states(states('input_select.selected_speaker'))
+                                  === 'playing' ? 'mdi:pause' : ''}
+                                disabled: >-
+                                  ${!['playing',
+                                  'paused'].includes(states(states('input_select.selected_speaker')))}
                               tap_action:
                                 action: perform-action
                                 perform_action: script.playback
@@ -5358,7 +5501,9 @@ views:
                             - icon: mdi:skip-next
                               sub_button_type: default
                               origami_base:
-                                disabled: ${!['playing', 'paused'].includes(states(states('input_select.selected_speaker')))}
+                                disabled: >-
+                                  ${!['playing',
+                                  'paused'].includes(states(states('input_select.selected_speaker')))}
                               tap_action:
                                 action: perform-action
                                 perform_action: script.playback
@@ -5369,18 +5514,29 @@ views:
                               sub_button_type: default
                               origami_base:
                                 icon: >-
-                                  ${(p => { const d = hass.entities?.[p?.entity_id]?.device_id; const b = d &&
-                                  Object.values(hass.entities).find((e) => e.platform === 'music_assistant' &&
-                                  e.translation_key === 'favorite_now_playing' && e.device_id === d); const a =
-                                  p?.attributes ?? {}; const start = Number.isFinite(a.media_position) &&
-                                  a.media_position_updated_at ? new Date(a.media_position_updated_at) -
-                                  a.media_position * 1000 : new Date(p?.last_changed); return b && new
-                                  Date(hass.states[b.entity_id]?.state) > start ? 'mdi:heart' : '';
+                                  ${(p => { const d =
+                                  hass.entities?.[p?.entity_id]?.device_id;
+                                  const b = d &&
+                                  Object.values(hass.entities).find((e) =>
+                                  e.platform === 'music_assistant' &&
+                                  e.translation_key === 'favorite_now_playing'
+                                  && e.device_id === d); const a = p?.attributes
+                                  ?? {}; const start =
+                                  Number.isFinite(a.media_position) &&
+                                  a.media_position_updated_at ? new
+                                  Date(a.media_position_updated_at) -
+                                  a.media_position * 1000 : new
+                                  Date(p?.last_changed); return b && new
+                                  Date(hass.states[b.entity_id]?.state) > start
+                                  ? 'mdi:heart' : '';
                                   })(hass.states[states('input_select.selected_speaker')])}
                                 disabled: >-
-                                  ${(p => !['playing', 'paused'].includes(p?.state) ||
-                                  !Object.values(hass.entities ?? {}).some((e) => e.platform === 'music_assistant' &&
-                                  e.translation_key === 'favorite_now_playing' && e.device_id ===
+                                  ${(p => !['playing',
+                                  'paused'].includes(p?.state) ||
+                                  !Object.values(hass.entities ?? {}).some((e)
+                                  => e.platform === 'music_assistant' &&
+                                  e.translation_key === 'favorite_now_playing'
+                                  && e.device_id ===
                                   hass.entities?.[p.entity_id]?.device_id))(hass.states[states('input_select.selected_speaker')])}
                               tap_action:
                                 action: perform-action
@@ -5401,12 +5557,13 @@ views:
                       ha-card .bubble-name-container {
                         margin-inline-end: var(--org-gap) !important;
                       }
-
                   - type: custom:bubble-card
                     card_type: button
                     button_type: slider
                     entity: number.group_volume
-                    name: "${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length ?? 0) > 1 ? 'Group ·' : ''}"
+                    name: >-
+                      ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length
+                      ?? 0) > 1 ? 'Group ·' : ''}
                     show_name: true
                     show_icon: false
                     show_state: false
@@ -5426,17 +5583,20 @@ views:
                         - icon: mdi:chevron-down
                           show_background: true
                           origami_base:
-                            hidden: ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length ?? 0) < 2}
+                            hidden: >-
+                              ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length
+                              ?? 0) < 2}
                           tap_action:
                             action: fire-dom-event
                             mini_popup: volume
-
                   - type: custom:bubble-card
                     card_type: sub-buttons
                     modules:
                       - origami_button
                     origami_base:
-                      hidden: ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length ?? 0) < 2}
+                      hidden: >-
+                        ${(hass.states[states('input_select.selected_speaker')]?.attributes?.group_members?.length
+                        ?? 0) < 2}
                     origami_button:
                       background: false
                       align: center
@@ -5449,7 +5609,9 @@ views:
                           icon: mdi:link-variant-off
                           show_name: true
                           origami_button:
-                            icon: "${states('script.group_speakers') === 'on' ? 'mdi:timer-sand' : ''}"
+                            icon: >-
+                              ${states('script.group_speakers') === 'on' ?
+                              'mdi:timer-sand' : ''}
                             disabled: ${states('script.group_speakers') === 'on'}
                           tap_action:
                             action: perform-action
