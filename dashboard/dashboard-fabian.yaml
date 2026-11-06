@@ -5163,42 +5163,6 @@ views:
                       sub_button:
                         main: []
                         bottom:
-                          - name: Bluetooth
-                            icon: mdi:bluetooth
-                            show_name: true
-                            origami_button:
-                              hidden: >-
-                                ${states('input_select.selected_speaker') !==
-                                'media_player.wohnzimmer'}
-                              disabled: >-
-                                ${(hass.states['media_player.wohnzimmer']?.attributes?.group_members?.[0]
-                                ?? 'media_player.wohnzimmer') !==
-                                'media_player.wohnzimmer'}
-                            tap_action:
-                              action: perform-action
-                              perform_action: media_player.select_source
-                              target:
-                                entity_id: media_player.wohnzimmer
-                              data:
-                                source: Bluetooth
-                          - name: TV
-                            icon: mdi:television-classic
-                            show_name: true
-                            origami_button:
-                              hidden: >-
-                                ${states('input_select.selected_speaker') !==
-                                'media_player.wohnzimmer'}
-                              disabled: >-
-                                ${(hass.states['media_player.wohnzimmer']?.attributes?.group_members?.[0]
-                                ?? 'media_player.wohnzimmer') !==
-                                'media_player.wohnzimmer'}
-                            tap_action:
-                              action: perform-action
-                              perform_action: media_player.select_source
-                              target:
-                                entity_id: media_player.wohnzimmer
-                              data:
-                                source: Optical In
                           - entity: switch.wohnzimmer_loudness
                             name: Loudness
                             show_name: true
