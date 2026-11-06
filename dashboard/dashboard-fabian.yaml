@@ -5621,6 +5621,174 @@ views:
                               ungroup: true
           - type: custom:bubble-card
             card_type: pop-up
+            hash: '#popup_lights'
+            name: Lichter
+            button_type: name
+            show_header: true
+            show_icon: false
+            popup_mode: fit-content
+            scrolling_effect: false
+            with_bottom_offset: true
+            margin: 7px
+            margin_top_mobile: 24px
+            margin_top_desktop: 30%
+            width_desktop: ''
+            modules:
+              - origami_base
+              - origami_popup
+            cards:
+              - type: vertical-stack
+                cards:
+                  - type: custom:bubble-card
+                    card_type: separator
+                    name: Wohnzimmer
+                    modules:
+                      - origami_base
+                      - origami_header
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: switch
+                    entity: light.wohnzimmer_wohnen
+                    name: Alle
+                    icon: mdi:lightbulb-multiple
+                    modules:
+                      - origami_base
+                      - origami_light
+                    origami_base:
+                      tile: true
+                    scrolling_effect: false
+                    tap_action:
+                      action: more-info
+                    button_action:
+                      tap_action:
+                        action: more-info
+                    sub_button:
+                      main:
+                        - icon: mdi:power
+                          show_background: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: light.toggle
+                            target:
+                              entity_id: light.wohnzimmer_wohnen
+                      bottom: []
+                    state_content:
+                      - state
+                      - brightness
+                  - type: custom:bubble-card
+                    card_type: sub-buttons
+                    modules:
+                      - origami_base
+                      - origami_button
+                    origami_base:
+                      animate: false
+                    origami_button:
+                      columns: 2
+                      padding: var(--ha-space-1) 0 0 0
+                      active: '{{ states(''sensor.living_room_scene'') }}'
+                    sub_button:
+                      main: []
+                      bottom:
+                        - name: Entspannen
+                          icon: mdi:weather-sunset-down
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: scene.turn_on
+                            target:
+                              entity_id: scene.wohnzimmer_wohnen_entspannen
+                        - name: Ruhe
+                          icon: mdi:weather-night-partly-cloudy
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: scene.turn_on
+                            target:
+                              entity_id: scene.wohnzimmer_wohnen_ruhe
+                        - name: Nacht
+                          icon: mdi:weather-night
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: scene.turn_on
+                            target:
+                              entity_id: scene.wohnzimmer_wohnen_nightlight
+                        - name: Hell
+                          icon: mdi:silverware-fork-knife
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: scene.turn_on
+                            target:
+                              entity_id: scene.wohnzimmer_wohnen_hell
+                  - type: custom:bubble-card
+                    card_type: separator
+                    name: Büro
+                    modules:
+                      - origami_base
+                      - origami_header
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: switch
+                    entity: light.buro_raum
+                    name: Alle
+                    icon: mdi:lightbulb-multiple
+                    modules:
+                      - origami_base
+                      - origami_light
+                    origami_base:
+                      tile: true
+                    scrolling_effect: false
+                    tap_action:
+                      action: more-info
+                    button_action:
+                      tap_action:
+                        action: more-info
+                    sub_button:
+                      main:
+                        - icon: mdi:power
+                          show_background: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: light.toggle
+                            target:
+                              entity_id: light.buro_raum
+                      bottom: []
+                    state_content:
+                      - state
+                      - brightness
+                  - type: custom:bubble-card
+                    card_type: sub-buttons
+                    modules:
+                      - origami_base
+                      - origami_button
+                    origami_base:
+                      animate: false
+                    origami_button:
+                      columns: 2
+                      padding: var(--ha-space-1) 0 0 0
+                      active: '{{ states(''sensor.office_scene'') }}'
+                    sub_button:
+                      main: []
+                      bottom:
+                        - name: Hell
+                          icon: mdi:weather-sunset-down
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: scene.turn_on
+                            target:
+                              entity_id: scene.buro_raum_hell
+                        - name: Mood
+                          icon: mdi:weather-night
+                          show_name: true
+                          tap_action:
+                            action: perform-action
+                            perform_action: scene.turn_on
+                            target:
+                              entity_id: scene.buro_raum_fuchsia_frost
+          - type: custom:bubble-card
+            card_type: pop-up
             hash: '#popup_favorites'
             name: Favorites
             button_type: name
