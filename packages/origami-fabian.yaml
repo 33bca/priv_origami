@@ -320,9 +320,9 @@ template:
         unique_id: windows_open_count
         icon: mdi:window-open-variant
         state: >
-          {{ ['binary_sensor.fenster_buro_contact',
-              'binary_sensor.fenster_schlafzimmer_contact',
-              'binary_sensor.fenster_wohnzimmer_contact']
+          {{ ['binary_sensor.buro_fenster',
+              'binary_sensor.schlafzimmer_fenster',
+              'binary_sensor.wohnzimmer_fenster']
              | select('is_state', 'on') | list | count }}
 
       # Greeting

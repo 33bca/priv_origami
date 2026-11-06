@@ -531,7 +531,7 @@ views:
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_gang
-                    - entity: binary_sensor.fenster_wohnzimmer_contact
+                    - entity: binary_sensor.wohnzimmer_fenster
                       css_class: window
                     - entity: climate.thermometer_gang
                       css_class: thermostat
@@ -556,7 +556,7 @@ views:
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_schlafzimmer
-                    - entity: binary_sensor.fenster_schlafzimmer_contact
+                    - entity: binary_sensor.schlafzimmer_fenster
                       css_class: window
                     - entity: climate.thermometer_schlafzimmer
                       css_class: thermostat
@@ -579,7 +579,7 @@ views:
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_buero
-                    - entity: binary_sensor.fenster_buro_contact
+                    - entity: binary_sensor.buro_fenster
                       css_class: window
                     - entity: climate.thermometer_buero
                       css_class: thermostat
@@ -644,7 +644,7 @@ views:
                       tap_action:
                         action: more-info
                         entity: sensor.vindstyrka_temperature
-                    - entity: binary_sensor.tur_balkon_contact
+                    - entity: binary_sensor.balkon_tur
                       css_class: door
                     - entity: sensor.climate_balcony
                       css_class: temperature
@@ -685,7 +685,7 @@ views:
                       icon: mdi:circle
                       origami_base:
                         color: ${attr.color_code ?? "transparent"}
-                    - entity: binary_sensor.fenster_wohnzimmer_contact
+                    - entity: binary_sensor.wohnzimmer_fenster
                       icon: mdi:window-closed-variant
                       origami_base:
                         icon:
@@ -723,7 +723,7 @@ views:
                       icon: mdi:circle
                       origami_base:
                         color: ${attr.color_code ?? "transparent"}
-                    - entity: binary_sensor.tur_balkon_contact
+                    - entity: binary_sensor.balkon_tur
                       icon: mdi:door-closed
                       origami_base:
                         icon:
@@ -761,7 +761,7 @@ views:
                       icon: mdi:circle
                       origami_base:
                         color: ${attr.color_code ?? "transparent"}
-                    - entity: binary_sensor.fenster_schlafzimmer_contact
+                    - entity: binary_sensor.schlafzimmer_fenster
                       icon: mdi:window-closed-variant
                       origami_base:
                         icon:
@@ -799,7 +799,7 @@ views:
                       icon: mdi:circle
                       origami_base:
                         color: ${attr.color_code ?? "transparent"}
-                    - entity: binary_sensor.fenster_buro_contact
+                    - entity: binary_sensor.buro_fenster
                       icon: mdi:window-closed-variant
                       origami_base:
                         icon:
