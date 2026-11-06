@@ -346,7 +346,7 @@ template:
             {% set mapping = [
               ('nightlight', 'nacht'),
               ('read', 'lesen'),
-              ('entspannen', 'entspannen')
+              ('entspannen', 'entspannen'),
               ('ruhe', 'ruhe')
             ] %}
             {% set ns = namespace(match=none) %}
