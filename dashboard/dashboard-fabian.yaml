@@ -397,7 +397,7 @@ views:
                         weight: '500'
           - type: custom:bubble-card
             card_type: separator
-            name: Favorites
+            name: Favoriten
             modules:
               - origami_base
               - origami_header
@@ -1156,7 +1156,7 @@ views:
                       perform_action: scene.turn_on
                       target:
                         entity_id: scene.living_room_night
-              - label: Favorites
+              - label: Favoriten
                 icon: mdi:star
                 tap_action:
                   action: navigate
@@ -1758,22 +1758,23 @@ views:
                 default=none) -%} {%- set a = (now().timestamp() - b) if b is
                 not none else 0 -%} {%- set u = states.update |
                 selectattr('state', 'eq', 'on') | list | count -%} {%- if s > 90
-                -%}Disk almost full {%- elif r > 95 -%}Memory low {%- elif c >
-                95 -%}CPU high {%- elif a > 259200 -%}Backup due {%- elif s > 80
-                -%}Disk almost full {%- elif r > 85 -%}Memory low {%- elif c >
-                80 -%}CPU high {%- elif c < 0 and r < 0 and s < 0 -%}No data {%-
-                elif u > 0 -%}{{ u }} {{ 'update' if u == 1 else 'updates' }}
-                {%- else -%}All good {%- endif -%}
+                -%}Festplatte fast voll {%- elif r > 95 -%}Arbeitsspeicher knapp
+                {%- elif c > 95 -%}CPU-Auslastung hoch {%- elif a > 259200
+                -%}Sicherung fällig {%- elif s > 80 -%}Festplatte fast voll {%-
+                elif r > 85 -%}Arbeitsspeicher knapp {%- elif c > 80
+                -%}CPU-Auslastung hoch {%- elif c < 0 and r < 0 and s < 0
+                -%}Keine Daten {%- elif u > 0 -%}{{ u }} {{ 'Update' if u == 1
+                else 'Updates' }} {%- else -%}Alles in Ordnung {%- endif -%}
               state_content: >-
                 {%- set n =
                 as_timestamp(states('sensor.system_monitor_betriebszeit'),
                 default=none) -%} {%- set d = [(now().timestamp() - n) | int, 0]
-                | max if n is not none else -1 -%} {%- if d < 0 -%}Uptime
-                unknown {%- elif d >= 86400 -%}Up {{ d // 86400 }} {{ 'day' if d
-                < 172800 else 'days' }} {%- elif d >= 3600 -%}Up {{ d // 3600 }}
-                {{ 'hour' if d < 7200 else 'hours' }} {%- else -%}Up {{ [d //
-                60, 1] | max }} {{ 'minute' if d < 120 else 'minutes' }} {%-
-                endif -%}
+                | max if n is not none else -1 -%} {%- if d < 0 -%}Betriebszeit
+                unbekannt {%- elif d >= 86400 -%}Seit {{ d // 86400 }} {{ 'Tag'
+                if d < 172800 else 'Tage' }} {%- elif d >= 3600 -%}Seit {{ d //
+                3600 }} {{ 'Stunde' if d < 7200 else 'Stunden' }} {%- else
+                -%}Seit {{ [d // 60, 1] | max }} {{ 'Minute' if d < 120 else
+                'Minuten' }} {%- endif -%}
               scrolling_effect: false
               modules:
                 - origami_base
@@ -5118,7 +5119,7 @@ views:
                       sub_button:
                         main: []
                         bottom:
-                          - name: Group all
+                          - name: Alle gruppieren
                             icon: mdi:link-variant
                             show_name: true
                             tap_action:
@@ -5906,7 +5907,7 @@ views:
           - type: custom:bubble-card
             card_type: pop-up
             hash: '#popup_favorites'
-            name: Favorites
+            name: Favoriten
             button_type: name
             show_header: true
             show_icon: false
@@ -5951,12 +5952,28 @@ views:
                         - entity: sensor.k2pro_print_status
                           name: K2 Pro
                           icon: mdi:printer-3d
+                          origami_tiles:
+                            state:
+                              cleaning: Reinigen
+                              'false': Aus
+                              error: Fehler!
+                              self-testing: Selbsttest
+                              completed: Fertig
+                              paused: Pausiert
+                              stopped: Gestoppt
+                              printing: Drucken
+                              processing: Verarbeiten
+                              idle: Ruhezustand
                           tap_action:
                             action: navigate
                             navigation_path: '#popup_printer'
                         - entity: sensor.kuche_ofen_geratestatus
                           name: Ofen
                           icon: mdi:stove
+                          origami_tiles:
+                            state:
+                              Ready To Start: Startbereit
+                              ready to start: Startbereit
                           tap_action:
                             action: navigate
                             navigation_path: '#popup_oven'
@@ -6009,7 +6026,8 @@ views:
                           icon: mdi:cart-outline
                           origami_tiles:
                             state: >-
-                              ${state === '1' ? '1 Eintrag' : state + ' Einträge'}
+                              ${state === '1' ? '1 Eintrag' : state + '
+                              Einträge'}
                           tap_action:
                             action: navigate
                             navigation_path: /todo?entity_id=todo.einkaufsliste
@@ -6018,7 +6036,8 @@ views:
                           icon: mdi:map-outline
                           origami_tiles:
                             state: >-
-                              ${state === '0' ? 'Niemand Zuhause' : state + ' Zuhause'}
+                              ${state === '0' ? 'Niemand Zuhause' : state + '
+                              Zuhause'}
                           tap_action:
                             action: navigate
                             navigation_path: /map
@@ -6066,31 +6085,35 @@ views:
                     entity: sensor.system_monitor_betriebszeit
                     icon: mdi:server
                     name: >-
-                      {%- set c = states('sensor.system_monitor_prozessornutzung') | float(-1) -%}
-                      {%- set r = states('sensor.system_monitor_arbeitsspeicherauslastung') | float(-1) -%}
-                      {%- set s = states('sensor.system_monitor_massenspeicher_auslastung') | float(-1) -%}
-                      {%- set b = as_timestamp(states('sensor.backup_last_successful_automatic_backup'), default=none) -%}
-                      {%- set a = (now().timestamp() - b) if b is not none else 0 -%}
-                      {%- set u = states.update | selectattr('state', 'eq', 'on') | list | count -%}
-                      {%- if s > 90 -%}Festplatte fast voll
-                      {%- elif r > 95 -%}RAM knapp
-                      {%- elif c > 95 -%}CPU hoch
-                      {%- elif a > 259200 -%}Backup fällig
-                      {%- elif s > 80 -%}Festplatte fast voll
-                      {%- elif r > 85 -%}RAM knapp
-                      {%- elif c > 80 -%}CPU hoch
-                      {%- elif c < 0 and r < 0 and s < 0 -%}Keine Daten
-                      {%- elif u > 0 -%}{{ u }} {{ 'Update' if u == 1 else 'Updates' }}
-                      {%- else -%}Alles in Ordnung
-                      {%- endif -%}
+                      {%- set c =
+                      states('sensor.system_monitor_prozessornutzung') |
+                      float(-1) -%} {%- set r =
+                      states('sensor.system_monitor_arbeitsspeicherauslastung')
+                      | float(-1) -%} {%- set s =
+                      states('sensor.system_monitor_massenspeicher_auslastung')
+                      | float(-1) -%} {%- set b =
+                      as_timestamp(states('sensor.backup_last_successful_automatic_backup'),
+                      default=none) -%} {%- set a = (now().timestamp() - b) if b
+                      is not none else 0 -%} {%- set u = states.update |
+                      selectattr('state', 'eq', 'on') | list | count -%} {%- if
+                      s > 90 -%}Festplatte fast voll {%- elif r > 95 -%}RAM
+                      knapp {%- elif c > 95 -%}CPU hoch {%- elif a > 259200
+                      -%}Backup fällig {%- elif s > 80 -%}Festplatte fast voll
+                      {%- elif r > 85 -%}RAM knapp {%- elif c > 80 -%}CPU hoch
+                      {%- elif c < 0 and r < 0 and s < 0 -%}Keine Daten {%- elif
+                      u > 0 -%}{{ u }} {{ 'Update' if u == 1 else 'Updates' }}
+                      {%- else -%}Alles in Ordnung {%- endif -%}
                     state_content: >-
-                      {%- set n = as_timestamp(states('sensor.system_monitor_betriebszeit'), default=none) -%}
-                      {%- set d = [(now().timestamp() - n) | int, 0] | max if n is not none else -1 -%}
-                      {%- if d < 0 -%}Betriebszeit unbekannt
-                      {%- elif d >= 86400 -%}Seit {{ d // 86400 }} {{ 'Tag' if d < 172800 else 'Tagen' }}
-                      {%- elif d >= 3600 -%}Seit {{ d // 3600 }} {{ 'Stunde' if d < 7200 else 'Stunden' }}
-                      {%- else -%}Seit {{ [d // 60, 1] | max }} {{ 'Minute' if d < 120 else 'Minuten' }}
-                      {%- endif -%}
+                      {%- set n =
+                      as_timestamp(states('sensor.system_monitor_betriebszeit'),
+                      default=none) -%} {%- set d = [(now().timestamp() - n) |
+                      int, 0] | max if n is not none else -1 -%} {%- if d < 0
+                      -%}Betriebszeit unbekannt {%- elif d >= 86400 -%}Seit {{ d
+                      // 86400 }} {{ 'Tag' if d < 172800 else 'Tagen' }} {%-
+                      elif d >= 3600 -%}Seit {{ d // 3600 }} {{ 'Stunde' if d <
+                      7200 else 'Stunden' }} {%- else -%}Seit {{ [d // 60, 1] |
+                      max }} {{ 'Minute' if d < 120 else 'Minuten' }} {%- endif
+                      -%}
                     scrolling_effect: false
                     modules:
                       - origami_base
