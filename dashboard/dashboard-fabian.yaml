@@ -427,6 +427,22 @@ views:
               rows: auto
             sub_button:
               bottom:
+                - name: TV
+                  entity: media_player.wohnzimmer_lg_oled_c5
+                  icon: mdi:television
+                  visibility:
+                    - condition: state
+                      entity: media_player.wohnzimmer_lg_oled_c5
+                      state_not:
+                        - 'off'
+                        - standby
+                        - unavailable
+                        - unknown
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#popup_tv'
+                  hold_action:
+                    action: more-info
                 - name: Zutritt
                   entity: binary_sensor.wohnzimmer_nuki_eingang_door_open
                   icon: mdi:door
@@ -443,6 +459,18 @@ views:
                   show_background: true
                   state_background: true
                   show_icon: true
+                - name: R2-D2
+                  entity: vacuum.r2_d2
+                  icon: mdi:robot-vacuum-variant
+                  force_icon: true
+                  origami_tiles:
+                    color: var(--orange-color)
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#popup_vacuum'
+                  hold_action:
+                    action: more-info
+                  show_name: false
                 - name: K2 Pro
                   entity: sensor.k2pro_print_status
                   icon: mdi:printer-3d
@@ -467,34 +495,6 @@ views:
                     action: none
                   double_tap_action:
                     action: none
-                - name: TV
-                  entity: media_player.wohnzimmer_lg_oled_c5
-                  icon: mdi:television
-                  visibility:
-                    - condition: state
-                      entity: media_player.wohnzimmer_lg_oled_c5
-                      state_not:
-                        - 'off'
-                        - standby
-                        - unavailable
-                        - unknown
-                  tap_action:
-                    action: navigate
-                    navigation_path: '#popup_tv'
-                  hold_action:
-                    action: more-info
-                - name: R2-D2
-                  entity: vacuum.r2_d2
-                  icon: mdi:robot-vacuum-variant
-                  force_icon: true
-                  origami_tiles:
-                    color: var(--orange-color)
-                  tap_action:
-                    action: navigate
-                    navigation_path: '#popup_vacuum'
-                  hold_action:
-                    action: more-info
-                  show_name: false
                 - name: Ofen
                   entity: sensor.kuche_ofen_geratestatus
                   timer_entity: number.kuche_ofen_zieldauer
@@ -5942,18 +5942,18 @@ views:
                             navigation_path: '#popup_lock'
                           hold_action:
                             action: more-info
-                        - entity: sensor.k2pro_print_status
-                          name: K2 Pro
-                          icon: mdi:printer-3d
-                          tap_action:
-                            action: navigate
-                            navigation_path: '#popup_printer'
                         - entity: vacuum.r2_d2
                           name: R2-D2
                           icon: mdi:robot-vacuum-variant
                           tap_action:
                             action: navigate
                             navigation_path: '#popup_vacuum'
+                        - entity: sensor.k2pro_print_status
+                          name: K2 Pro
+                          icon: mdi:printer-3d
+                          tap_action:
+                            action: navigate
+                            navigation_path: '#popup_printer'
                         - entity: sensor.kuche_ofen_geratestatus
                           name: Ofen
                           icon: mdi:stove
