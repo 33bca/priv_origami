@@ -1,6 +1,6 @@
 # Fan pop-up
 
-<img width="800" alt="The fan pop-up, and with its timer open, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/fan-pop-up.webp">
+<img width="800" alt="The fan pop-up at medium speed, and at low speed with the Nature preset, oscillation and its timer running, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/fan-pop-up.webp">
 
 Speed, presets, oscillation and direction for one fan, and a timer that turns it off after 1, 3 or 5 hours.
 
@@ -10,7 +10,7 @@ Speed, presets, oscillation and direction for one fan, and a timer that turns it
 
 ## Setup
 
-1. In [`pop-up.yaml`](pop-up.yaml), change `fan.bedroom` to the fan's entity ID, and `Nature` and `Normal` to its presets, as [States](https://my.home-assistant.io/redirect/tools_states/) lists them in `preset_modes`. Delete the controls that the fan doesn't have, such as the presets, the oscillation keys or the arrows.
+1. In [`pop-up.yaml`](pop-up.yaml), change `fan.bedroom` to the fan's entity ID, and `Nature` and `Normal` to its presets, as [States](https://my.home-assistant.io/redirect/tools_states/) lists them in `preset_modes`. Delete the presets if the fan has none. The arrows and the oscillation keys show only on a fan that has them.
 2. Add [`pop-up.yaml`](pop-up.yaml) to the dashboard, as described under [Get started](../../README.md#get-started).
 3. Open the pop-up from a button whose tap action is **Navigate** to `#popup_fan`, such as the fan in the [favorites list](../favorites-list/README.md).
 

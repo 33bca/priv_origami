@@ -1,6 +1,6 @@
 # TV pop-up
 
-<img width="800" alt="The TV pop-up, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/tv-pop-up.webp">
+<img width="800" alt="The TV pop-up, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/tv-pop-up.webp">
 
 What's on, the TV's apps, a remote and the volume of the speaker that plays the TV's sound.
 
@@ -17,8 +17,8 @@ What's on, the TV's apps, a remote and the volume of the speaker that plays the 
 
 ## Optional
 
-- **What's cast.** With [Google Cast](https://www.home-assistant.io/integrations/cast/), the TV card shows what's cast to the TV, and a blurred picture of it shows behind the pop-up.
-- **Volume buttons.** They change the volume by exactly 1 % on a tap, 5 % on a double tap and 10 % on a hold, and a tap on the number mutes, which Home Assistant's own volume actions can't. Open [Scripts](https://my.home-assistant.io/redirect/scripts/) and select **Create script**, then **Create new script**. In the three-dot menu, select **Edit in YAML**, paste [`volume.yaml`](volume.yaml) and save it with the name **Volume**, so its entity ID is `script.volume`. The slider alone is enough for most homes: then delete the group under `name: Volume`.
+- **What's cast.** With [Google Cast](https://www.home-assistant.io/integrations/cast/), the TV card shows what's cast to the TV, and a blurred picture of it shows behind the pop-up. Without it, delete `art` and `players`.
+- **Volume buttons.** They change the volume by exactly 1 % on a tap, 5 % on a double tap and 10 % on a hold, and a tap on the number mutes, which Home Assistant's own volume actions can't. Open [Scripts](https://my.home-assistant.io/redirect/scripts/) and select **Create script**, then **Create new script**. In the three-dot menu, select **Edit in YAML**, paste [`volume.yaml`](volume.yaml) and save it with the name **Volume**, so its entity ID is `script.volume`. The slider alone is enough for most homes: then delete `- name: Volume` and the group under it.
 - **No separate speaker.** Point the slider and the volume buttons to the TV, and delete the **TV** button, which switches the speaker to its TV input.
 
 > [!TIP]

@@ -1,0 +1,14 @@
+# A grid of tiles from the example home's favorites. At midday, the timer and the vacuum come first,
+# and in the late evening the music plays. The TV is on in both, so each grid is full.
+kind: panel
+cards:
+  - file: favorites/tiles.yaml
+    with:
+      origami_tiles: null
+light:
+  states:
+    media_player.bedroom: {state: playing, attributes: {friendly_name: Bedroom, media_title: Daybreak, media_artist: Lumen Fields, entity_picture: /local/cover-1.jpg}}
+    media_player.living_room_tv: {state: 'on', attributes: {friendly_name: TV}}
+dark:
+  states:
+    media_player.living_room_tv: {state: 'on', attributes: {friendly_name: TV}}

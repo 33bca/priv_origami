@@ -3,8 +3,8 @@
 The checks look for AI attribution in the files and commit messages, check
 each module's basics, keep entity IDs out of the modules, keep card-mod out of
 the dashboard and check the writing rules in the docs that follow them. They
-also list the screenshots that are still placeholders. They run in about a
-second.
+also check that the README's release badge names the newest release and list
+the screenshots that are still placeholders. They run in about a second.
 
     python3 .github/scripts/check_rules.py [--release] [git range]
 
@@ -148,6 +148,12 @@ start = changelog.find("## Next release")
 if start >= 0:
     end = changelog.find("\n## ", start + 1)
     check_writing("CHANGELOG.md", changelog[start:end if end > 0 else None], changelog[:start].count("\n") + 1)
+# The README's release badge is static, because a badge that asks GitHub for the latest release often doesn't load.
+# It names the changelog's newest release, so a release that forgets the badge fails here.
+newest = re.search(r"^## (\d+(?:\.\d+)*)", changelog, flags=re.M)
+badge = re.search(r"img\.shields\.io/badge/Release-V([\d.]+)-", (ROOT / "README.md").read_text(encoding="utf-8"))
+if newest and not (badge and badge.group(1) == newest.group(1)):
+    fail("README.md", f"the release badge names {'V' + badge.group(1) if badge else 'no version'} instead of V{newest.group(1)}, the changelog's newest release")
 for path in modules:
     doc = yaml.safe_load(path.read_text(encoding="utf-8"))
     check_writing(f"{path.relative_to(ROOT)} description", str(next(iter(doc.values())).get("description", "")))
@@ -203,15 +209,27 @@ for readme in sorted((ROOT / "dashboard").glob("*/README.md")):
 # Screenshots: an image in a README or the module reference whose file doesn't exist yet is a placeholder.
 # The list is the shot list for the last pass before the release, and with --release, a placeholder fails.
 # While a release is built, the images point to next, so its READMEs show them. With --release, such an image fails.
+# The hero's dark version stands in a source tag, which GitHub shows in its dark theme.
 shots = {}
 for name in READMES:
-    for tag in re.findall(r"<img\b[^>]*>", (ROOT / name).read_text(encoding="utf-8")):
-        src = re.search(r'src="https://raw\.githubusercontent\.com/hazymorning/origami/(main|next)/([^"]+)"', tag)
+    for tag in re.findall(r"<(?:img|source)\b[^>]*>", (ROOT / name).read_text(encoding="utf-8")):
+        src = re.search(r'(?:src|srcset)="https://raw\.githubusercontent\.com/hazymorning/origami/(main|next)/([^"]+)"', tag)
         if src and RELEASE and src.group(1) == "next":
             fail(name, f"{src.group(2)} points to next instead of main")
         if src and not (ROOT / src.group(2)).exists():
             alt = re.search(r'alt="([^"]*)"', tag)
             shots.setdefault(src.group(2), alt.group(1) if alt else "")
+# A card's own images, such as the weather card's house, load from the repository through jsDelivr. Each one exists,
+# or each folder of them, which ends with a slash, such as the weather pictures. Like the README images, they point to next
+# while a release is built. With --release, such an image fails.
+for path in sorted((ROOT / "dashboard").glob("**/*.yaml")):
+    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        for ref, file in re.findall(r"https://cdn\.jsdelivr\.net/gh/hazymorning/origami@([^/\s]+)/([^\s'\"]+)", line):
+            if not ((ROOT / file).is_dir() if file.endswith("/") else (ROOT / file).is_file()):
+                fail(f"{path.relative_to(ROOT)}:{n}", f"loads {file}, which doesn't exist")
+            if RELEASE and ref != "main":
+                fail(f"{path.relative_to(ROOT)}:{n}", f"loads {file} from {ref} instead of main")
+
 if shots:
     print(f"{len(shots)} screenshots are still placeholders:")
     print("\n".join(f"  {path}: {alt}" for path, alt in shots.items()))

@@ -8,7 +8,10 @@
 //     and load other cards with resources, a list of their files next to the scenario. click lists elements to tap before the shots.
 //     preview shows other cards as in the card editor, and admin makes the user an admin. seed makes Math.random repeat the
 //     same numbers, so a card that places things at random, such as the weather card's clouds, looks the same in every shot.
+//     With a seed, advance lets the animations run for that many seconds before the shot, frame by frame and the same in every
+//     shot, such as birds that cross the weather card's sky.
 //     A scenario that opens a pop-up with open, or sets viewport, also gets a shot of the whole page.
+//     Files of this repository that a card loads from jsDelivr, such as the weather card's house, come from the working tree.
 //
 // It needs Node, then `npm ci` and `npx playwright install chromium` in this folder.
 // Bubble Card's version below is downloaded once into .cache. Raise it when the dashboard moves to a newer Bubble Card.
@@ -218,6 +221,12 @@ customElements.define('hui-card', class extends HTMLElement {
       el.setConfig(c); el.hass = this._h; this.appendChild(el); this._kids.push(el);
       // As in the card editor, where a card such as a menu shows itself in place
       if (window.__PREVIEW) el.preview = true;
+    } else if (c.type === 'placeholder') {
+      // A card that is not ready yet, as a plain card of its height and margins with a question mark, such as for the images
+      const box = document.createElement('div');
+      box.textContent = '?';
+      box.style.cssText = 'height:' + (c.height ?? '120px') + ';margin:' + (c.margin ?? '0') + ';display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-radius:var(--ha-card-border-radius);background:var(--ha-card-background);box-shadow:var(--ha-card-box-shadow, none);font:var(--ha-font-weight-medium) 48px var(--ha-font-family-body);color:var(--secondary-text-color)';
+      this.appendChild(box);
     } else {
       const box = document.createElement('div');
       box.textContent = c.type;
@@ -240,6 +249,9 @@ ${vars(rgb({ ...theme, ...themeModes[mode] }))}
 html, body { margin: 0; background: var(--dashboard-background); color: var(--primary-text-color); font-family: var(--ha-font-family-body); }
 .shot { box-sizing: border-box; padding: 16px; background: var(--dashboard-background); }
 .shot.popup { background: var(--popup-background); }
+/* A phone page is a sections view on a narrow screen. Home Assistant pads its top and bottom with the view's padding and the row gap,
+   and its sides with the narrow column gap, which the theme sets to 24 px, so the cards line up with the navigation bar's player. */
+.shot.phone { padding: calc(var(--view-container-padding-top, 0px) + var(--ha-view-sections-row-gap, 24px)) var(--ha-view-sections-narrow-column-gap, 8px) calc(var(--view-container-padding-bottom, 0px) + var(--ha-view-sections-row-gap, 24px)) var(--ha-view-sections-narrow-column-gap, 8px); }
 .stack { display: flex; flex-direction: column; gap: 12px; }
 </style>
 <script src="/mdi.js"></script>
@@ -253,7 +265,7 @@ window.__PREVIEW = ${!!scenario.preview};
 ${shot ? '' : '<script src="/checks.js"></script>'}
 </body></html>`;
 
-const types = { '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.woff2': 'font/woff2', '.yaml': 'text/yaml', '.png': 'image/png', '.jpg': 'image/jpeg' };
+const types = { '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.woff2': 'font/woff2', '.yaml': 'text/yaml', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
   const send = (body, type) => { res.writeHead(200, { 'content-type': type, 'cache-control': 'no-store' }); res.end(body); };
@@ -289,6 +301,12 @@ try {
         return next(streams.get(file));
       };
     }, scenario.seed);
+    // Files of this repository that a card loads from jsDelivr, such as the weather card's house, come from the working tree
+    await context.route(/^https:\/\/cdn\.jsdelivr\.net\/gh\/hazymorning\/origami@[^/]+\/([^?#]+)/, (route) => {
+      const file = path.join(repo, decodeURIComponent(route.request().url().match(/@[^/]+\/([^?#]+)/)[1]));
+      if (!file.startsWith(repo + path.sep) || !fs.existsSync(file)) return route.fulfill({ status: 404 });
+      return route.fulfill({ body: fs.readFileSync(file), contentType: types[path.extname(file)] || 'application/octet-stream' });
+    });
     const p = await context.newPage();
     if (shot && scenario.time) await p.clock.setFixedTime(new Date(scenario.time));
     p.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -297,13 +315,28 @@ try {
     await p.waitForFunction(() => window.__ready === true, null, { timeout: 30000 })
       .catch((e) => { throw new Error('The page did not finish: ' + (errors.join(' | ') || e.message)); });
     if (shot) {
-      // With a seed, animations that count time in frames stand still once the page is ready, so what the seed placed stays in place
-      if (scenario.seed !== undefined) await p.evaluate(() => {
-        const now = performance.now();
-        performance.now = () => now;
+      // With a seed, animations that count time in frames stand still once the page is ready, so what the seed placed stays in place.
+      // advance first runs them for that many seconds, one frame of 1/60 s after the other, so a bird that appears after a few seconds is in the shot.
+      if (scenario.seed !== undefined) await p.evaluate(async (advance) => {
+        const realNow = performance.now.bind(performance);
         const raf = window.requestAnimationFrame.bind(window);
+        let queue = [];
+        if (advance > 0) {
+          window.requestAnimationFrame = (cb) => { queue.push(cb); return queue.length; };
+          // The frames asked for before this run once more in the browser and then wait in the queue
+          await new Promise((r) => setTimeout(r, 100));
+        }
+        let now = realNow();
+        performance.now = () => now;
+        for (let f = 0; f < advance * 60; f++) {
+          now += 1000 / 60;
+          const due = queue;
+          queue = [];
+          for (const cb of due) { try { cb(now); } catch (e) { /* a card's own error shows in the page's errors */ } }
+        }
         window.requestAnimationFrame = (cb) => raf(() => cb(now));
-      });
+        for (const cb of queue) raf(() => cb(now));
+      }, Number(scenario.advance) || 0);
       // Taps that a scenario makes before the shots, such as on a key that opens a mini pop-up
       for (const sel of scenario.click || []) { await p.click(sel); await p.waitForTimeout(900); }
       fs.mkdirSync(outDir, { recursive: true });

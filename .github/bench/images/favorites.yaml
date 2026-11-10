@@ -1,5 +1,15 @@
+# The favorites in one row, at the moments of the home view. In each, the first favorite is on and the others wait for a tap.
 kind: panel
-cards:
-  - {file: favorites/header.yaml}
-  - {file: favorites/tiles.yaml}
+light:
+  states:
+    vacuum.robot: {state: docked, attributes: {friendly_name: Vacuum, battery_level: 100}}
+  cards:
+    - {file: favorites/header.yaml}
+    - file: favorites/tiles.yaml
+      only: [Timer, Shopping, Vacuum]
+dark:
+  cards:
+    - {file: favorites/header.yaml}
+    - file: favorites/tiles.yaml
+      only: [Music, Shopping, Vacuum]
 trim: 16

@@ -1,6 +1,6 @@
 # Climate table
 
-<img width="800" alt="The climate table with a row for each room, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/climate-table.webp">
+<img width="800" alt="The climate table with a row for each room, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/climate-table.webp">
 
 Every room's temperature, humidity, windows and heating in one table. Arrows mark the warmest and the coldest room, and the most humid and the driest.
 
@@ -12,7 +12,7 @@ Every room's temperature, humidity, windows and heating in one table. Arrows mar
 
 1. In [`card.yaml`](card.yaml), change each row to one of the home's rooms, with a short name such as **Living** or **Bed**, so the table fits on a phone and its columns line up. To add a room, copy a row. A room keeps only the cells it has sensors for, so delete the window or the thermostat where a room has none.
 2. In the columns `temperature` and `humidity`, list the sensors of all rows in each of the three templates, so the arrows compare every room.
-3. Add [`card.yaml`](card.yaml) to the dashboard, as described under [Get started](../../README.md#get-started).
+3. Add [`card.yaml`](card.yaml) to the dashboard, as described under [Get started](../../README.md#get-started), right below the rooms header if there is one.
 
 ## Optional
 

@@ -100,15 +100,18 @@ Origami:
   scroller-bleed: 'var(--view-bleed)'
   scroller-padding: 'var(--scroller-bleed) var(--scroller-bleed) var(--ha-space-10, 40px)'
 
-  # Layout
+  # Layout. In a sections view, cards and sections stand 12 px apart, as in stacks and grids. The sections view also puts its gap
+  # above the first section and below the last one, so the page's own padding is 4 px, 16 px in all. row-gap stays 0, because
+  # Bubble Card adds it to the height of a large card, such as a media card that spans 2.2 rows.
   row-gap: '0px'
   column-gap: 'var(--ha-space-6, 24px)'
   header-height: 'var(--ha-space-15, 60px)'
-  view-container-padding-top: 'var(--ha-space-4, 16px)'
-  view-container-padding-bottom: 'var(--ha-space-4, 16px)'
+  view-container-padding-top: 'var(--ha-space-1)'
+  view-container-padding-bottom: 'var(--ha-space-1)'
   ha-view-sections-column-gap: 'var(--column-gap)'
   ha-view-sections-narrow-column-gap: 'var(--column-gap)'
-  ha-view-sections-row-gap: 'var(--row-gap)'
+  ha-view-sections-row-gap: 'var(--ha-space-3)'
+  ha-section-grid-row-gap: 'var(--ha-space-3)'
   grid-card-gap: 'var(--ha-space-3)'
   horizontal-stack-card-gap: 'var(--ha-space-3)'
   vertical-stack-card-gap: 'var(--ha-space-3)'
@@ -232,6 +235,15 @@ Origami:
 
   # The chosen option in a dropdown's menu has a quiet fill
   bubble-select-list-item-accent-color: 'var(--fill-subtle)'
+
+  # Kept for cards and modules from 2.0, because HACS updates the theme before the modules and cards are copied again.
+  # Nothing in 3.0 reads them, and they can go in 4.0.
+  card-padding: 'var(--ha-space-3, 12px)'
+  control-padding-x: 'var(--ha-space-4, 16px)'
+  font-size-headline: 'var(--ha-font-size-3xl, 28px)'
+  font-size-compact: 'var(--ha-font-size-s)'
+  lamp-tint: 'color-mix(in srgb, var(--lamp-color) var(--tint-strength), var(--ha-card-background))'
+  scroller-mask: 'linear-gradient(to right, transparent 0px, black var(--scroller-bleed), black calc(100% - var(--ha-space-12, 48px)), transparent 100%)'
 
   modes:
 

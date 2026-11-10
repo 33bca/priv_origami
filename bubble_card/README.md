@@ -2,10 +2,10 @@
 
 This folder holds ten modules for [Bubble Card](https://github.com/Clooos/Bubble-Card). They give Bubble cards the frame, text styles, colors and controls of the rest of the Origami dashboard, and they need the [Origami theme](../README.md#get-started) for its colors and sizes.
 
-> [!WARNING]
-> These modules are experimental. Bubble Card's CSS is complex, especially for card heights, so details may still change. The modules work as shown in the dashboard.
+> [!NOTE]
+> Long-time Bubble Card users may wonder why many cards don't use the card types made for them, such as the media player card. Everything here is built around usability. People at home who aren't very technical didn't get ideas like a card that doubles as a slider when it's held. They're nice ideas, but they didn't work out in daily use for the people this was made for, so a card that explains itself is almost always the choice here.
 
-<img width="800" alt="A pop-up built from the modules, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/module-popup.webp">
+<img width="800" alt="A pop-up built from the modules, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-popup.webp">
 
 ## Installation
 
@@ -58,7 +58,7 @@ Controls stay neutral. An active control is filled with `fill-active`, the text 
 
 <br>
 
-<img width="800" alt="A card with a tray, a tile and a switch with their shadows, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/module-depth.webp">
+<img width="800" alt="A card with a tray, a tile and a switch with their shadows, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-depth.webp">
 
 The card background casts a shadow, as paper does, and a gray fill never does. So a control always stands out from what it lies on:
 
@@ -116,12 +116,12 @@ The `origami_base`, `origami_header`, `origami_tiles`, `origami_table`, `origami
 ```yaml
 sub_button:
   bottom:
-    - name: Bath
-      entity: input_boolean.bath_time
+    - name: Timer
+      entity: timer.kitchen
       origami_tiles:
-        # While the bath runs, the tile counts the minutes until it ends. Otherwise, it shows Home Assistant's word for the state.
+        # While the timer runs, the tile counts the minutes until it ends. Otherwise, it shows Home Assistant's word for the state.
         state:
-          'on': ${num(minutesUntil('input_datetime.bath_time_end'), 0, 'minute')}
+          active: ${num(minutesUntil('timer.kitchen'), 0, 'minute')}
 ```
 
 </details>
@@ -132,7 +132,7 @@ sub_button:
 
 The Base module is the frame for button and media player cards. It sets the height and the styles of the icon and the text, and it keeps the sub-buttons neutral.
 
-<img width="800" alt="A regular card, a tile and two compact rows with the pill switch, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/module-base.webp">
+<img width="800" alt="A regular card, a tile and two compact rows with the pill switch, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-base.webp">
 
 <details>
 <summary>Options and example</summary>
@@ -260,7 +260,7 @@ On a key with an icon and a name, such as Pause, the icon is 20 px and stands 8 
 
 With `vertical: true`, the icon is at the top left with the name below it, and the main sub-buttons are at the top right. The bottom sub-buttons form a line of small icons and values under the name. The state line is hidden, only sub-buttons with `css_class: accent` are filled, and `toggle` and `group` are off. The room cards use this layout with `tile: true`.
 
-<img width="800" alt="The rooms header and four room cards, and with all rooms shown, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/rooms.webp">
+<img width="800" alt="The rooms header and four room cards, and with all rooms shown, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/rooms.webp">
 
 A tap anywhere on the card runs the button action, and a hold runs the hold action. With `button_type: name` and no `tap_action`, this includes the icon. A sub-button without its own tap, hold or double tap action passes the tap to the card. Dropdowns and sliders keep working.
 
@@ -326,7 +326,7 @@ origami_base:
 
 The Fan module spins a fan card's icon at the fan's speed. The icon spins backwards while the fan runs in reverse. It stands still when the device asks for reduced motion. Base fills the power button while the fan runs and the button for the current speed. With `state_content: percentage`, the state line shows the speed, or Home Assistant's word for off while the fan is off and reports a speed of 0.
 
-<img width="800" alt="Two fan cards, one at speed two and one that is off, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/module-fan.webp">
+<img width="800" alt="Two fan cards, one at speed two and one that is off, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-fan.webp">
 
 <details>
 <summary>Example</summary>
@@ -379,7 +379,7 @@ rows: 1.375
 
 The Climate module shows what a thermostat is doing. While it heats, cools, dries or runs its fan, the state line names that action, and the card takes the color of the matching mode. At other times, the state line shows the action, such as Idle, or the mode. The icon is muted while the thermostat is off. Thermostats without `hvac_action` count as on in every mode except off.
 
-<img width="800" alt="Three thermostats that are heating, idle and off, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/module-climate.webp">
+<img width="800" alt="Three thermostats that are heating, idle and off, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-climate.webp">
 
 <details>
 <summary>Example</summary>
@@ -437,7 +437,7 @@ The [cover card](../dashboard/cover/card.yaml) shows how to use the module.
 
 The Media module styles media player cards. With the speaker layout, the card shows the title and the artist while music plays, the source while the speaker uses an input, and the cover in the icon. With the TV layout, the state line shows what plays, the running app or the TV's state.
 
-<img width="800" alt="A speaker with a volume slider, a TV in TV mode and a compact speaker, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/module-media.webp">
+<img width="800" alt="A speaker with a volume slider, a TV in TV mode and a compact speaker, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-media.webp">
 
 <details>
 <summary>Options and example</summary>
@@ -691,7 +691,7 @@ living_room_repeat:
 
 The Slider module turns a slider button card into a standalone slider without icon or state, and it works with Base. Its keys stand after the track. On a sub-buttons card, slider sub-buttons become rows with a name, a track and a value. The name takes the first half of a row and the track the second, so a track is never wider than half the card. A row's track is 28 px tall, a little lower than a key, and the rows stand 12 px apart. A row's name has the size and weight of a name in a list, and its track has no grip, so the value never meets one. Every track has the subtle fill of a Button row's tiles, and every value stands in its track, in the medium weight.
 
-<img width="800" alt="A subwoofer level slider and a fan speed slider, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/module-slider.webp">
+<img width="800" alt="A subwoofer level slider and a fan speed slider, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-slider.webp">
 
 <details>
 <summary>Example</summary>
@@ -823,7 +823,7 @@ sub_button:
 
 The Button module creates rows and grids of buttons on a sub-buttons card, and styles the bottom sub-buttons of a button card the same way. Put every button under `sub_button: bottom`, with `show_name: true` where the name should show. Buttons can also form segmented bars or a row that scrolls sideways, as in the [TV pop-up](../dashboard/tv/README.md).
 
-<img width="800" alt="Scenes with the active scene highlighted, two toggles and a plain text button, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/module-button.webp">
+<img width="800" alt="Scenes with the active scene highlighted, two toggles and a plain text button, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-button.webp">
 
 <details>
 <summary>Options and example</summary>
@@ -845,9 +845,9 @@ The Button module creates rows and grids of buttons on a sub-buttons card, and s
 | `chips` | `false` | The buttons are chips, with the label in the text color and the icon in the secondary color. Active chips have a bold label. |
 | `pending` | `false` | After a tap, a button shows its next look, faded and without taps, until its state changes or 10 seconds pass. Only buttons whose look can change wait, never segments or buttons that only open something. A button's own `pending` key decides for that button. |
 | `label_size` | `large` | The size of segment labels. `large` suits short figures, and `normal` suits words. |
-| `scroll` | `false` | The buttons stay in one row that scrolls sideways, and `columns` has no effect. The row reaches past the card to the screen's edge, and only its buttons take taps, so a tap beside them reaches the card next to it. |
+| `scroll` | `false` | The buttons stay in one row that scrolls sideways, and `columns` has no effect. The row reaches past the card to the screen's edge, and only its buttons take taps, so a tap beside them reaches the card next to it. The card is as tall as its buttons, and the row reaches past it only at its sides, so a pop-up that scrolls ends right below it. |
 | `labels` | `inside` | `below` makes each button a large icon field with its name under it, as for scenes, with larger icons unless `icon_size` is set. A field without a name is a square. |
-| `field_size` | `var(--tile-size-lg)` | With `labels: below`, the size of the icon fields, such as `76px`. |
+| `field_size` | `var(--tile-size-lg)` | The size of the icon fields with `labels: below`, such as `76px`, and of a stacked button's field, 64 px by default. |
 | `outline` | | Takes the same values as `active`. Matching buttons that are not active get a ring, such as a suggested scene. |
 | `start` | | Takes the same values as `active`. The row begins at the matching button, and the buttons before it move to the end. |
 
@@ -936,7 +936,7 @@ sub_button:
 
 A button is also highlighted while its entity has the value its tap sets, such as a source or a speed, as the TV pop-up's **TV** button does. A button with its own entity is highlighted while that entity is on and has a state color, unless it has `show_background: false` or `css_class: plain`, or opens something without `css_class: accent`.
 
-Each button can have an `origami_button` key with `name`, `icon`, `color`, `name_color` and `background`, as in Header, and Base's `on`, `disabled` and `dot`. `on` decides whether the button is highlighted, except with `css_class: plain` or `disabled`. `color` and `background` apply while the button is not highlighted, so each playlist in a row can have its own tint:
+Each button can have an `origami_button` key with `name`, `icon`, `color`, `name_color` and `background`, as in Header, and Base's `on`, `disabled` and `dot`. `on` decides whether the button is highlighted, except with `css_class: plain` or `disabled`, such as for a button that opens a pop-up, which is otherwise never highlighted. `color` is the icon's color and, while the button is highlighted, its lamp color. `background` applies while the button is not highlighted, so each playlist in a row can have its own tint:
 
 ```yaml
 - name: Chill
@@ -947,7 +947,19 @@ Each button can have an `origami_button` key with `name`, `icon`, `color`, `name
     background: var(--tint)
 ```
 
-With `content_layout: icon-top` or `icon-bottom`, a button stacks its icon and name and is twice as tall, unless the card has `background: false`.
+With `content_layout: icon-top` or `icon-bottom`, a button is a box like a tile, with its icon in a field above or below its name, as the scenes in the [lights pop-up](../dashboard/lights/README.md) and the [favorites](../dashboard/favorites/README.md). The field has 12 px of the box around it, the name stands 14 px below the field, and the last line ends 18 px above the box's edge. The boxes in a row share one width. A box's name is bold, as a tile's is. A highlighted box keeps its fill, and its field is tinted in the button's own color, as a lit tile's icon is. A box whose field holds a picture or colors keeps them and its fill, and a small dot before the line under the name marks it instead, as the dot on a room card, in the lamp color. With `background: false`, the box and the field have no fill.
+
+A button's own `order` moves it in the row, such as `-1` to the front, and a map from its state moves it only in those states. In a box or with `labels: below`, its own `field` fills the field with a picture or colors instead of the icon, such as a recipe photo or a scene's colors, and its own `label` is a second line under the name, such as a scene's brightness. A gradient needs quotes, because YAML reads `#` as the start of a comment:
+
+```yaml
+- name: Night
+  icon: mdi:weather-night
+  show_name: true
+  content_layout: icon-top
+  origami_button:
+    field: 'linear-gradient(135deg, #353a4e, #606883 55%, #8f6a55)'
+    label: 10 %
+```
 
 A button with only an icon is a square, except in a grid or a bar. Base's `sub_button_height` and `sub_button_text_size` set the buttons' height and label size, as for these chips under a music card:
 
@@ -1020,7 +1032,7 @@ sub_button:
 
 The Header module turns a separator card into a section header, with the card's name as the title and its sub-buttons as values beside or above it. It is not related to the Origami Header card from the dashboard setup.
 
-<img width="800" alt="Headers with text, a colored dot and chips, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/module-header.webp">
+<img width="800" alt="Headers with text, a colored dot and chips, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-header.webp">
 
 <details>
 <summary>Options and example</summary>
@@ -1140,16 +1152,16 @@ The header sets its own height, so it needs no `grid_options`, and Popup's `gap`
 
 ### Tiles
 
-The Tiles module turns a sub-buttons card into a grid of tiles or a list, each with an icon, a name and a state line. Bubble Card's visibility conditions decide when a tile shows.
+The Tiles module turns a sub-buttons card into a grid of tiles, a row of tiles that scrolls sideways or a list, each with an icon, a name and a state line. Bubble Card's visibility conditions decide when a tile shows.
 
-<img width="800" alt="Six tiles with the oven and the vacuum sorted to the front, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/favorites.webp">
+<img width="800" alt="A grid of tiles with the timer and the vacuum sorted to the front, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-tiles.webp">
 
 <details>
 <summary>Options and example</summary>
 
 <br>
 
-On the card, `origami_tiles: layout` is `grid` (the default) or `list`. A grid has 1 to 6 `columns`, 2 by default. A list has the card options `slim`, `dividers`, `sign`, `pending` and `background`, described below. All other keys go under each tile's own `origami_tiles` key.
+On the card, `origami_tiles: layout` is `grid` (the default) or `list`. A grid has 1 to 6 `columns`, 2 by default, or with `scroll: true` one row that scrolls sideways to the screen's edge, with each tile twice as wide as it is tall. A list has the card options `slim`, `dividers`, `sign`, `pending` and `background`, described below. All other keys go under each tile's own `origami_tiles` key.
 
 | Key | Default | Description |
 | --- | --- | --- |
@@ -1191,17 +1203,16 @@ sub_button:
           cleaning: Vacuum
         order:
           cleaning: -1
-    - name: Cooking
-      entity: sensor.dinner
-      icon: mdi:chef-hat
+    - name: Music
+      entity: media_player.bedroom
+      icon: mdi:speaker
       origami_tiles:
-        state: Dinner
-        image: ${attr.recipe?.image}
-        image_size: 230%
+        # The cover in place of the icon, while the speaker plays
+        image: ${attr.entity_picture}
       visibility:
-        - condition: time
-          after: '14:00'
-          before: '20:59:59'
+        - condition: state
+          entity: media_player.bedroom
+          state: playing
 ```
 
 A tile whose entity is unavailable is dimmed. More tile examples are in the [favorites](../dashboard/favorites/tiles.yaml).
@@ -1240,16 +1251,16 @@ sub_button:
         perform_action: script.toggle
         target:
           entity_id: script.movie_night
-    - entity: input_boolean.bath_time
-      name: Bath
-      icon: mdi:bathtub-outline
+    - entity: timer.kitchen
+      name: Timer
+      icon: mdi:timer-outline
       origami_tiles:
         color:
-          'on': var(--water-color)
+          active: var(--amber-color)
         state:
-          'on': ${num(minutesUntil('input_datetime.bath_time_end'), 0, 'minute')} left
+          active: ${num(minutesUntil('timer.kitchen'), 0, 'minute')} left
       tap_action:
-        action: toggle
+        action: more-info
     # While the TV is off, the row turns it on. Once it is on, the row opens the TV pop-up.
     - entity: media_player.living_room_tv
       name: TV
@@ -1353,7 +1364,7 @@ sub_button:
 
 The Table module turns a sub-buttons card into a table. Each group of sub-buttons is a row, and each sub-button is a cell. The cells fill the columns in order, and all rows share the columns. A cell hidden by its visibility conditions leaves its column empty, and a row with all cells hidden takes no space.
 
-<img width="800" alt="The rooms header with the climate table open, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/next/images/v3/climate-table.webp">
+<img width="800" alt="The rooms header with the climate table open, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/climate-table.webp">
 
 <details>
 <summary>Options and example</summary>
@@ -1422,7 +1433,7 @@ sub_button:
           css_class: temperature
 ```
 
-The office has no thermostat, so its temperature cell names its column. The climate table in the [dashboard](../dashboard/dashboard.yaml) has six columns and uses the other keys, such as arrows for the warmest and the coldest room.
+The office has no thermostat, so its temperature cell names its column. The [climate table](../dashboard/climate-table/card.yaml) has five columns and uses the other keys, such as arrows for the warmest and the coldest room.
 
 </details>
 
@@ -1566,7 +1577,7 @@ The theme sets the pop-up background, so Bubble Card's `bg_color`, `bg_opacity` 
 
 A module adds only what Bubble Card lacks, and Bubble Card handles the layout, the actions and the editor. [Bubble Card's module documentation](https://github.com/Clooos/Bubble-Card#modules) explains how modules work. Good examples are Climate, which writes the state line, Media, which also writes the name line, and Tiles, which turns a sub-buttons card into a grid.
 
-Base puts its helpers on `card._org` for the modules that run after it. A module checks `card._org?.hass === hass && card._org.version >= 12` to know that Base 12 or later ran first in the same render. Newer parts need a higher version: 12.5 for `shows()` and `unframe()`, 12.6 for `backdrop()`, 12.8 for the card padding in `--org-pad`, 12.9 for the width of a three-key tray in `--org-end-col` and the color of an unlit icon in `--org-chip-rest`, 13 for `env`, `ctx`, `classed()`, `each()`, `fade()` and `pen()`, 13.1 for `layout()` and `later()`, 13.2 for `dropdown()`, `menu()` and `picker()`, 13.4 for `pending()`, and 13.5 for the fill and the shadow of a key in `--org-key-bg` and `--org-key-shadow`. These are the helpers:
+Base puts its helpers on `card._org` for the modules that run after it. A module checks `card._org?.hass === hass && card._org.version >= 12` to know that Base 12 or later ran first in the same render. Newer parts need a higher version: 12.5 for `shows()` and `unframe()`, 12.6 for `backdrop()`, 12.8 for the card padding in `--org-pad`, 12.9 for the width of a three-key tray in `--org-end-col` and the color of an unlit icon in `--org-chip-rest`, 13 for `env`, `ctx`, `classed()`, `each()`, `fade()` and `pen()`, 13.1 for `layout()` and `later()`, 13.2 for `dropdown()`, `menu()` and `picker()`, 13.4 for `pending()`, 13.5 for the fill and the shadow of a key in `--org-key-bg` and `--org-key-shadow`, and 13.6 for `scroller()`. These are the helpers:
 
 | Helper | Description |
 | --- | --- |
@@ -1593,6 +1604,7 @@ Base puts its helpers on `card._org` for the modules that run after it. A module
 | `pending(on, wait)` | Shows a tapped bottom sub-button with the look it is about to get until its look changes or 10 seconds pass, as Button's and Tiles' `pending` options do. `on` lists the numbers of the sub-buttons that look on now, and `wait` those that wait after a tap. The module styles the classes `org-pending-on` and `org-pending-off`. |
 | `later(key, work)` | Runs `work` in the next frame, once per card and `key` however many style passes ask for it, with the `work` of the last pass. Bubble Card runs several passes for one change, about seven while a pop-up opens, so work that reads the layout, such as measuring a name, is done once. |
 | `fade(selector, start)` and `pen(element, pseudo)` | `fade()` returns the rules that fade a scrolling row out at both ends, in both directions of writing, from `start` to 48 px before the end. `pen()` measures texts in the font of an element's `::before`, or of `pseudo`, and returns the computed style as `cs` and a `width(text)` function. |
+| `scroller()` | The rules that turn the bottom sub-buttons of a sub-buttons card into one row that scrolls sideways to the screen's edge, as Button's and Tiles' `scroll` options do. Only the sub-buttons take taps, and the row reaches past the card above and below only by `--org-key-room`. |
 | `shows(item)` and `unframe(pad)` | `shows()` tells whether a sub-button shows its name or a state. `unframe()` returns the rules that remove a sub-buttons card's frame, so the bottom sub-buttons fill it with `pad` around them, as in Button, Slider, Table and Tiles. |
 | `backdrop(selector, address, mix, blur, round, host)` | The rules that show a cover behind a card's content. `mix` is its share from 0 to 100, `blur` blurs it, and `round` rounds the corners. Media's cover background and Popup's art use it. With the element that holds the layer as `host`, the last cover stays until the next one has loaded. |
 
@@ -1600,4 +1612,4 @@ Bubble Card hands the state line to a module whose code contains `card.querySele
 
 Base keeps the card's options in `card._org.opts` and the look of its entity in `card._org.me`. With `data-org-fill="own"` on the card, Base fills only sub-buttons that set a value or have `css_class: accent`, for a module that fills its sub-buttons itself or keeps them neutral. With `data-org-bg="own"`, Base leaves the filter and opacity of a media card's background to the module.
 
-Anyone can share a module in the Module Store by posting it in the [Share your Modules](https://github.com/Clooos/Bubble-Card/discussions/categories/share-your-modules) category of Bubble Card's discussions. The Origami modules will move there later.
+Anyone can share a module in the Module Store by posting it in the [Share your Modules](https://github.com/Clooos/Bubble-Card/discussions/categories/share-your-modules) category of Bubble Card's discussions.

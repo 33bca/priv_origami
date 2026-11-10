@@ -11,6 +11,75 @@ margin_top_desktop: 30%
 modules:
   - origami_base
   - origami_popup
+origami_popup:
+  mini_popups:
+    # The arrow beside All's slider opens a row for each lamp. Moving a slider to the start turns the lamp off.
+    lamps:
+      - type: custom:bubble-card
+        card_type: sub-buttons
+        modules:
+          - origami_slider
+        sub_button:
+          main: []
+          bottom:
+            - entity: light.bathroom_mirror
+              name: Mirror
+              sub_button_type: slider
+              always_visible: true
+              allow_light_slider_to_0: true
+            - entity: light.bathroom_night_light
+              name: Night light
+              sub_button_type: slider
+              always_visible: true
+              allow_light_slider_to_0: true
+    # The palette on All opens the scenes. The one turned on last is highlighted until the lamps are turned off.
+    scenes:
+      width: fit-content
+      frameless: true
+      cards:
+        - type: custom:bubble-card
+          card_type: sub-buttons
+          modules:
+            - origami_base
+            - origami_button
+          origami_button:
+            columns: 1
+            icon_size: var(--icon-size-xs)
+            active: >-
+              ${(() => {
+                const lamps = hass.states['light.bathroom'];
+                const since = lamps?.state === 'on' ? Date.parse(lamps.last_changed) - 10000 : Infinity;
+                return ['scene.bathroom_bright', 'scene.bathroom_bath', 'scene.bathroom_night']
+                  .filter((id) => Date.parse(states(id)) >= since)
+                  .sort((a, b) => Date.parse(states(b)) - Date.parse(states(a)))[0] ?? '';
+              })()}
+          sub_button:
+            main: []
+            bottom:
+              - name: Bright
+                icon: mdi:white-balance-sunny
+                show_name: true
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.bathroom_bright
+              - name: Bath
+                icon: mdi:bathtub-outline
+                show_name: true
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.bathroom_bath
+              - name: Night
+                icon: mdi:weather-night
+                show_name: true
+                tap_action:
+                  action: perform-action
+                  perform_action: scene.turn_on
+                  target:
+                    entity_id: scene.bathroom_night
 cards:
   - type: vertical-stack
     cards:
@@ -26,6 +95,12 @@ cards:
           - origami_media
         origami_base:
           group: true
+        # The cover shows in the icon and tints the card
+        origami_media:
+          cover:
+            - background
+            - icon
+          cover_mix: 10
         hide:
           power_button: true
           previous_button: true
@@ -57,11 +132,12 @@ cards:
                 perform_action: media_player.media_next_track
                 target:
                   entity_id: media_player.bathroom
-            # Filled while the speaker uses Bluetooth, because the tap selects it
+            # Filled while the speaker uses Bluetooth, because the tap selects it. It shows only on a speaker with a Bluetooth source.
             - icon: mdi:bluetooth
               show_background: false
               origami_base:
                 icon: "${attr.source === 'Bluetooth' ? 'mdi:bluetooth-connect' : ''}"
+                hidden: ${!(attr.source_list ?? []).includes('Bluetooth')}
               tap_action:
                 action: perform-action
                 perform_action: media_player.select_source
@@ -75,7 +151,8 @@ cards:
               always_visible: true
         rows: '2.2'
 
-      # Lights: with only a few lamps, each one has its own row and no group is needed
+      # Lights: the header counts the lamps of the group that are on, and a tap opens the group's dialog with each lamp.
+      # All switches them together
       - type: vertical-stack
         cards:
           - type: custom:bubble-card
@@ -89,75 +166,52 @@ cards:
               icon_size: var(--icon-size-s)
             sub_button:
               main:
-                # Counts the lamps in the list that are on
-                - icon: mdi:chevron-right
+                - entity: light.bathroom
+                  show_icon: false
                   show_name: true
-                  content_layout: icon-right
                   show_background: false
                   origami_header:
                     name: >-
                       ${(ids => (n => n ? n + ' of ' + ids.length + ' on' : 'All off')(ids.filter((id) =>
-                      states(id) === 'on').length))(['light.bathroom_mirror', 'light.bathroom_night_light'])}
+                      states(id) === 'on').length))(attr.entity_id ?? [])}
                   tap_action:
-                    action: navigate
-                    navigation_path: '#popup_lights'
+                    action: more-info
+          # All has keys for the scenes and the power, and a slider for the brightness with the arrow to the lamps beside it, as in the lights pop-up
           - type: custom:bubble-card
             card_type: button
             button_type: switch
-            entity: light.bathroom_mirror
-            name: Mirror
-            icon: mdi:mirror-rectangle
+            entity: light.bathroom
+            name: All
+            icon: mdi:lightbulb-multiple
             modules:
               - origami_base
-            origami_base:
-              compact: true
-              tile: true
-            sub_button:
-              main:
-                - sub_button_type: slider
-                  always_visible: true
-                  allow_light_slider_to_0: true
-            rows: 1
-          - type: custom:bubble-card
-            card_type: button
-            button_type: switch
-            entity: light.bathroom_night_light
-            name: Night light
-            icon: mdi:lightbulb-night-outline
-            modules:
-              - origami_base
-            origami_base:
-              compact: true
-              tile: true
-            sub_button:
-              main:
-                - sub_button_type: slider
-                  always_visible: true
-                  allow_light_slider_to_0: true
-            rows: 1
-          # Bath time is a Toggle helper for an automation, such as one that dims the lamps. Only the switch turns it on or off.
-          - type: custom:bubble-card
-            card_type: button
-            button_type: switch
-            entity: input_boolean.bath_time
-            name: Bath time
-            icon: mdi:shower
-            modules:
-              - origami_base
-            origami_base:
-              compact: true
-              toggle: true
-              tile: true
             button_action:
               tap_action:
-                action: none
+                action: more-info
             sub_button:
+              bottom_layout: rows
               main:
-                - icon: mdi:circle
+                - icon: mdi:palette-outline
+                  tap_action:
+                    action: fire-dom-event
+                    mini_popup: scenes
+                - icon: mdi:power
                   show_background: true
                   tap_action:
                     action: toggle
-            rows: 1
+              bottom:
+                - name: All lamps
+                  group:
+                    - sub_button_type: slider
+                      always_visible: true
+                    - icon: mdi:chevron-down
+                      fill_width: false
+                      show_background: true
+                      tap_action:
+                        action: fire-dom-event
+                        mini_popup: lamps
+            state_content: state
+            rows: auto
 
       # Climate: the header shows the temperature and the humidity, with a dot in a color for the temperature
       - type: vertical-stack
@@ -180,13 +234,14 @@ cards:
                   show_background: false
                   origami_header:
                     name: ${num(state, 1)}° / ${num(states('sensor.bathroom_humidity'), 0, '%')}
-                    # Blue up to 17°, green up to 22°, then yellow and orange, and red above 30°
+                    # Blue up to 17°, green up to 22°, then yellow and orange, and red above 30°, in Celsius. Fahrenheit is converted first.
                     color: >-
-                      ${[[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                      ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
                       [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
                       [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
                       [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
-                      .find(([top]) => parseFloat(state) <= top)?.[1] ?? 'transparent'}
+                      .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                      (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
           # Minus and plus move the target by half a degree, and a tap on the card opens the thermostat
           - type: custom:bubble-card
             card_type: button
@@ -252,5 +307,4 @@ cards:
                 perform_action: homeassistant.turn_off
                 target:
                   entity_id:
-                    - light.bathroom_mirror
-                    - light.bathroom_night_light
+                    - light.bathroom
