@@ -6004,6 +6004,24 @@ views:
                       dividers: true
                     sub_button:
                       bottom:
+                        - entity: todo.einkaufsliste
+                          name: Einkaufsliste
+                          icon: mdi:cart-outline
+                          origami_tiles:
+                            state: >-
+                              ${state === '1' ? '1 Eintrag' : state + ' Einträge'}
+                          tap_action:
+                            action: navigate
+                            navigation_path: /todo?entity_id=todo.einkaufsliste
+                        - entity: zone.home
+                          name: Map
+                          icon: mdi:map-outline
+                          origami_tiles:
+                            state: >-
+                              ${state === '0' ? 'Niemand Zuhause' : state + ' Zuhause'}
+                          tap_action:
+                            action: navigate
+                            navigation_path: /map
                         - name: Lichter
                           icon: mdi:lightbulb
                           tap_action:
