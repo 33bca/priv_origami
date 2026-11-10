@@ -119,7 +119,7 @@ views:
                     inset-inline-end: -6px;
                     min-width: 20px;
                     height: 20px;
-                    padding: 0 6px;
+                    padding: 0 6px 0 6px;
                     border-radius: 10px;
                     font-size: 12px;
                     font-weight: var(--ha-font-weight-bold);
@@ -138,77 +138,213 @@ views:
                   .row .message { font-size: var(--ha-font-size-s); }
           - type: custom:origami-weather
             weather_entity: weather.weather_at_4310
-            sun_enabled: false
-            moon_enabled: false
             color_mode: theme
-            card_height: 160px
-            card_padding: 20px
-            background_mode: color
-            background_threshold_entity: weather.weather_at_4310
-            background_thresholds:
-              - value: sunny
-                color: '#e7e2d9'
-                color_dark: '#24211d'
-              - value: clear-night
-                color: '#dbdce1'
-                color_dark: '#15181f'
-              - value: partlycloudy
-                color: '#e0deda'
-                color_dark: '#1c2023'
-              - value: cloudy
-                color: '#d3d4d6'
-                color_dark: '#222324'
-              - value: fog
-                color: '#e6e6e5'
-                color_dark: '#272829'
-              - value: windy
-                color: '#dadfdd'
-                color_dark: '#1c201e'
-              - value: windy-variant
-                color: '#d5dad9'
-                color_dark: '#1a1f1e'
-              - value: rainy
-                color: '#cdd2d6'
-                color_dark: '#181e22'
-              - value: pouring
-                color: '#c8cdd2'
-                color_dark: '#14191e'
-              - value: lightning
-                color: '#cfced3'
-                color_dark: '#1c1b21'
-              - value: lightning-rainy
-                color: '#cacacf'
-                color_dark: '#18171e'
-              - value: snowy
-                color: '#e6eaed'
-                color_dark: '#252b2e'
-              - value: snowy-rainy
-                color: '#d8dddf'
-                color_dark: '#1f2527'
-              - value: hail
-                color: '#d2d9da'
-                color_dark: '#1c2324'
-              - value: exceptional
-                color: '#ded8d2'
-                color_dark: '#27221f'
-            card_offset: 16px 0px 12px 0px
+            card_height: 150px
+            card_padding: 0px 0px 0px 0px
+            card_offset: 20px 0px 0px 0px
+            card_tap_action:
+              action: more-info
+            sun_moon_size: 40
+            sun_moon_x: dynamic
+            shadow_color: var(--tile-chip-shadow)
             cloud_effects: false
-            night_sky_effects: false
-            bird_effects: false
-            balloon_effects: false
-            plane_effects: false
+            background_mode: images
+            weather_image_path: https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/
+            weather_image_path_dark: https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/
             grid_options:
-              rows: auto
               columns: 12
+              rows: auto
+            content_direction: row
+            content_align: end
+            css: >
+              /* Origami Weather with the Origami theme's values */
+
+              :host {
+                --origami-text-light: var(--primary-text-color);
+                --origami-text-dark: var(--primary-text-color);
+                --origami-bottom-font-weight: var(--ha-font-weight-normal);
+                --origami-bottom-bg-filter: var(--blur-soft);
+                /* A chip's corner is 35 % of its height: the text and 6px above and below it */
+                --origami-bottom-bg-radius: calc((1em + 12px) * var(--radius-ratio));
+              }
+
+              /* The pictures have a clear sky, and the card paints the paper in
+              the weather's color. Each picture is also the mask of the sky,
+                 so the sun, the moon and the stars show only in the open sky and set behind the hills, the trees and the clouds. */
+              #card-root { --paper: #e2e5e7; --sky: none; }
+
+              #card-root.scheme-dark { --paper: #1b1e20; }
+
+              #card-root.weather-sunny { --paper: #eee5d7; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/sunny.webp");
+              }
+
+              #card-root.scheme-dark.weather-sunny { --paper: #261d13; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/sunny.webp");
+              }
+
+              #card-root.weather-partlycloudy { --paper: #dee9ef; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/partlycloudy.webp");
+              }
+
+              #card-root.scheme-dark.weather-partlycloudy { --paper: #182227;
+              --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/partlycloudy.webp");
+              }
+
+              #card-root.weather-cloudy { --paper: #e2e5e7; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/cloudy.webp");
+              }
+
+              #card-root.scheme-dark.weather-cloudy { --paper: #1b1e20; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/cloudy.webp");
+              }
+
+              #card-root.weather-fog { --paper: #e8e7e5; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/fog.webp");
+              }
+
+              #card-root.scheme-dark.weather-fog { --paper: #222120; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/fog.webp");
+              }
+
+              #card-root.weather-rainy { --paper: #d9e1ea; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/rainy.webp");
+              }
+
+              #card-root.scheme-dark.weather-rainy { --paper: #171e26; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/rainy.webp");
+              }
+
+              #card-root.weather-pouring { --paper: #d7dde4; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/pouring.webp");
+              }
+
+              #card-root.scheme-dark.weather-pouring { --paper: #151b21; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/pouring.webp");
+              }
+
+              #card-root.weather-lightning { --paper: #e5dfe8; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/lightning.webp");
+              }
+
+              #card-root.scheme-dark.weather-lightning { --paper: #221d25;
+              --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/lightning.webp");
+              }
+
+              #card-root.weather-lightning-rainy { --paper: #dfdbe2; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/lightning-rainy.webp");
+              }
+
+              #card-root.scheme-dark.weather-lightning-rainy { --paper: #1d1920;
+              --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/lightning-rainy.webp");
+              }
+
+              #card-root.weather-hail { --paper: #d3dfdf; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/hail.webp");
+              }
+
+              #card-root.scheme-dark.weather-hail { --paper: #121c1c; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/hail.webp");
+              }
+
+              #card-root.weather-snowy { --paper: #e5eaec; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/snowy.webp");
+              }
+
+              #card-root.scheme-dark.weather-snowy { --paper: #1c2426; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/snowy.webp");
+              }
+
+              #card-root.weather-snowy-rainy { --paper: #dde2e5; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/snowy-rainy.webp");
+              }
+
+              #card-root.scheme-dark.weather-snowy-rainy { --paper: #1e2124;
+              --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/snowy-rainy.webp");
+              }
+
+              #card-root.weather-windy { --paper: #dce6e3; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/windy.webp");
+              }
+
+              #card-root.scheme-dark.weather-windy { --paper: #182220; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/windy.webp");
+              }
+
+              #card-root.weather-windy-variant { --paper: #dae1de; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/windy-variant.webp");
+              }
+
+              #card-root.scheme-dark.weather-windy-variant { --paper: #171d1b;
+              --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/windy-variant.webp");
+              }
+
+              #card-root.weather-clear-night { --paper: #e0e3ed; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/clear-night.webp");
+              }
+
+              #card-root.scheme-dark.weather-clear-night { --paper: #161924;
+              --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/clear-night.webp");
+              }
+
+              #card-root.weather-exceptional { --paper: #eadad3; --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/light/exceptional.webp");
+              }
+
+              #card-root.scheme-dark.weather-exceptional { --paper: #271a15;
+              --sky:
+              url("https://cdn.jsdelivr.net/gh/hazymorning/origami@main/dashboard/weather/diorama/dark/exceptional.webp");
+              }
+
+              #card-root.scheme-light, #card-root.scheme-dark {
+              background-color: var(--paper); }
+
+              /* The landscape stands at the bottom left, however wide the card
+              is */
+
+              #weather-bg > img { object-position: left bottom; }
+
+              #card-root.has-weather-bg :is(#sun-moon-layer, #star-canvas) {
+                -webkit-mask-image: var(--sky), linear-gradient(#000 0 0);
+                -webkit-mask-position: left bottom, 0 0;
+                -webkit-mask-size: cover, 100% 100%;
+                -webkit-mask-repeat: no-repeat;
+                -webkit-mask-composite: xor;
+                mask-image: var(--sky), linear-gradient(#000 0 0);
+                mask-position: left bottom, 0 0;
+                mask-size: cover, 100% 100%;
+                mask-repeat: no-repeat;
+                mask-composite: exclude;
+              }
+
+              /* The paper changes softly with the weather, and a new picture
+              fades in */
+
+              @media (prefers-reduced-motion: no-preference) {
+                #card-root.scheme-light, #card-root.scheme-dark { transition: background-color 1.2s var(--ease-standard), transform .4s cubic-bezier(.2, 0, .2, 1); }
+                #weather-bg > img { animation: appear .9s var(--ease-standard) both; }
+              }
+
+              @keyframes appear { from { opacity: 0; } }
+
+              /* Rain, snow, birds and planes in calmer colors */
+
+              #weather-effects { filter: saturate(.6); }
+
+              /* On a wide screen, the heading above the card sets the space */
+
+              @media (min-width: 768px) { :host { margin: 0px 0px 0px 0px
+              !important; } }
             button_containers:
               - position: custom
-                position_anchor: top-right
-                position_x: -32px
-                position_y: -10px
-                custom_width: 168px
-                image: demo-home-image
-              - position: custom
                 position_anchor: top-left
+                padding: 16px 16px 16px 16px
                 button_gap: 6px
                 buttons:
                   - entity: sun.sun
@@ -217,54 +353,48 @@ views:
                         entity: sun.sun
                         state: above_horizon
                     elements:
+                      - type: icon
+                        icon: mdi:weather-sunset-down
                       - type: text
-                        size: 12px
-                        weight: '500'
-                        color: var(--secondary-text-color)
-                        text: Sonnenuntergang
-                      - type: text
-                        size: 12px
-                        weight: '500'
-                        color: var(--primary-text-color)
                         entity: sun.sun
                         attribute: next_setting
+                        size: 12px
+                        weight: '700'
+                        color: var(--primary-text-color)
                   - entity: sun.sun
                     visibility:
                       - condition: state
                         entity: sun.sun
                         state: below_horizon
                     elements:
+                      - type: icon
+                        icon: mdi:weather-sunset-up
                       - type: text
-                        size: 12px
-                        weight: '500'
-                        color: var(--secondary-text-color)
-                        text: Sonnenaufgang
-                      - type: text
-                        size: 12px
-                        weight: '500'
-                        color: var(--primary-text-color)
                         entity: sun.sun
                         attribute: next_rising
-              - position: custom
-                position_anchor: bottom-left
-                gap: 5px
-                buttons:
-                  - entity: weather.home
-                    width: 100%
-                    elements:
-                      - type: text
-                        size: 48px
+                        size: 12px
                         weight: '700'
                         color: var(--primary-text-color)
+              - position: custom
+                position_anchor: top-right
+                align: end
+                padding: 16px 20px 16px 20px
+                buttons:
+                  - entity: weather.weather_at_4310
+                    style: vertical
+                    inner_gap: 6px
+                    padding: 0px 0px 0px 0px
+                    elements:
+                      - type: text
                         attribute: temperature
                         precision: 0
                         format: °
-                  - entity: weather.home
-                    elements:
+                        size: 40px
+                        weight: '700'
+                        color: var(--primary-text-color)
                       - type: text
                         size: 12px
                         weight: '500'
-                        color: var(--primary-text-color)
           - type: custom:bubble-card
             card_type: separator
             name: Favorites
@@ -290,6 +420,8 @@ views:
             modules:
               - origami_base
               - origami_tiles
+            origami_tiles:
+              scroll: true
             grid_options:
               columns: full
               rows: auto
@@ -335,6 +467,22 @@ views:
                     action: none
                   double_tap_action:
                     action: none
+                - name: TV
+                  entity: media_player.wohnzimmer_lg_oled_c5
+                  icon: mdi:television
+                  visibility:
+                    - condition: state
+                      entity: media_player.wohnzimmer_lg_oled_c5
+                      state_not:
+                        - 'off'
+                        - standby
+                        - unavailable
+                        - unknown
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#popup_tv'
+                  hold_action:
+                    action: more-info
                 - name: R2-D2
                   entity: vacuum.r2_d2
                   icon: mdi:robot-vacuum-variant
@@ -1345,7 +1493,7 @@ views:
               .media-player.mobile {
                 width: auto !important;
                 align-self: stretch !important;
-                margin: 0 var(--view-bleed) !important;
+                margin: 0 var(--view-bleed) 0 var(--view-bleed) !important;
               }
 
 
@@ -1688,7 +1836,7 @@ views:
                   color-mix(in srgb, var(--primary-background-color) 28%, transparent);
               }
               .sheet {
-                padding: calc(var(--ha-space-5) + var(--safe-area-inset-top, 0px)) var(--ha-space-5) var(--ha-space-6, 24px);
+                padding: calc(var(--ha-space-5) + var(--safe-area-inset-top, 0px)) var(--ha-space-5) var(--ha-space-6, 24px) var(--ha-space-5);
                 gap: var(--ha-space-5);
                 box-shadow: var(--ha-card-box-shadow);
               }
@@ -2070,6 +2218,7 @@ views:
                         name: Storen
                         icon_open: mdi:roller-shade
                         icon_close: mdi:roller-shade-closed
+                        state_content: state
                         modules:
                           - origami_cover
                           - origami_base
@@ -2375,6 +2524,7 @@ views:
                         name: Storen
                         icon_open: mdi:roller-shade
                         icon_close: mdi:roller-shade-closed
+                        state_content: state
                         modules:
                           - origami_cover
                           - origami_base
@@ -2983,6 +3133,7 @@ views:
                         name: Storen
                         icon_open: mdi:roller-shade
                         icon_close: mdi:roller-shade-closed
+                        state_content: state
                         modules:
                           - origami_cover
                           - origami_base
@@ -3391,6 +3542,7 @@ views:
                         name: Storen
                         icon_open: mdi:roller-shade
                         icon_close: mdi:roller-shade-closed
+                        state_content: state
                         modules:
                           - origami_cover
                           - origami_base
@@ -3905,10 +4057,10 @@ views:
             name: TV
             button_type: name
             show_icon: false
-            margin_top_mobile: 24px
-            margin_top_desktop: 30%
+            margin_top_mobile: 72px
+            margin_top_desktop: 300px
             bg_opacity: 100
-            popup_mode: fit-content
+            popup_mode: adaptive-dialog
             with_bottom_offset: true
             performance_mode: performance
             modules:
@@ -4015,7 +4167,7 @@ views:
                     origami_button:
                       segmented: true
                       icon_size: var(--icon-size-m)
-                      padding: var(--ha-space-2) 0
+                      padding: var(--ha-space-2) 0 var(--ha-space-2) 0
                     sub_button:
                       main: []
                       bottom:
@@ -4194,7 +4346,7 @@ views:
                       background: false
                       align: center
                       icon_size: var(--icon-size-l)
-                      padding: var(--ha-space-2) 0 0
+                      padding: var(--ha-space-2) 0 0 0
                     styles: >-
                       ha-card .bubble-sub-button-bottom-container {
                         display: grid !important;
@@ -4582,8 +4734,6 @@ views:
                       sub_button_height: 44px
                     origami_tiles:
                       layout: list
-                      slim: true
-                      dividers: true
                       sign: none
                       background: false
                     sub_button:
@@ -4761,7 +4911,7 @@ views:
                       columns: 2
                       active_style: toggle
                       icon_size: var(--icon-size-s)
-                      padding: 0 0 var(--ha-space-2)
+                      padding: 0 0 var(--ha-space-2) 0
                       active: >-
                         ${states('vacuum.r2_d2') === 'cleaning' ?
                         states('sensor.r2_d2_aktueller_raum') : ''}
@@ -4964,7 +5114,7 @@ views:
                         columns: 1
                         align: center
                         icon_size: var(--icon-size-xs)
-                        padding: 0 0 var(--ha-space-2)
+                        padding: 0 0 var(--ha-space-2) 0
                       sub_button:
                         main: []
                         bottom:
@@ -5590,16 +5740,18 @@ views:
             button_type: name
             show_header: true
             show_icon: false
-            popup_mode: fit-content
+            popup_mode: adaptive-dialog
             scrolling_effect: false
             with_bottom_offset: true
             margin: 7px
-            margin_top_mobile: 24px
-            margin_top_desktop: 30%
-            width_desktop: ''
+            margin_top_mobile: 80px
+            margin_top_desktop: 0px
+            width_desktop: 500px
             modules:
               - origami_base
               - origami_popup
+            origami_popup:
+              gap: var(--ha-space-5)
             cards:
               - type: vertical-stack
                 cards:
@@ -5759,11 +5911,11 @@ views:
             show_header: true
             show_icon: false
             show_previous_button: false
-            popup_mode: fit-content
+            popup_mode: adaptive-dialog
             scrolling_effect: false
             with_bottom_offset: true
             margin: 7px
-            margin_top_mobile: 24px
+            margin_top_mobile: 22px
             margin_top_desktop: 30%
             width_desktop: ''
             modules:
@@ -5848,7 +6000,8 @@ views:
                       - origami_tiles
                     origami_tiles:
                       layout: list
-                      sign: open
+                      slim: true
+                      dividers: true
                     sub_button:
                       bottom:
                         - name: Lichter
@@ -5858,6 +6011,8 @@ views:
                             navigation_path: '#popup_lights'
                         - name: Server
                           icon: mdi:server
+                          origami_tiles:
+                            state: Übersicht
                           tap_action:
                             action: navigate
                             navigation_path: '#popup_server'
@@ -5887,7 +6042,6 @@ views:
             cards:
               - type: vertical-stack
                 cards:
-                  # The most urgent problem as the name, the uptime below it and the age of the last backup at the end
                   - type: custom:bubble-card
                     card_type: button
                     button_type: state
@@ -5933,17 +6087,18 @@ views:
                     sub_button:
                       bottom_layout: rows
                       main:
-                        # How long ago the last backup ran, orange after 3 days and red after 7
                         - entity: sensor.backup_last_successful_automatic_backup
                           show_state: true
                           show_icon: false
                           origami_base:
                             name: >-
-                              ${(h => h < 48 ? num(h, 0, 'hour') : num(h / 24, 0, 'day'))((Date.now() -
-                              new Date(state)) / 3600000)}
+                              ${(h => h < 48 ? num(h, 0, 'hour') : num(h / 24,
+                              0, 'day'))((Date.now() - new Date(state)) /
+                              3600000)}
                             name_color: >-
-                              ${(d => d >= 7 ? 'var(--error-color)' : d >= 3 ? 'var(--heat-color)' :
-                              '')((Date.now() - new Date(state)) / 86400000)}
+                              ${(d => d >= 7 ? 'var(--error-color)' : d >= 3 ?
+                              'var(--heat-color)' : '')((Date.now() - new
+                              Date(state)) / 86400000)}
                             label: Sicherung
                           tap_action:
                             action: navigate
@@ -5956,8 +6111,12 @@ views:
                               icon: mdi:archive-arrow-down-outline
                               show_name: true
                               origami_base:
-                                name: "${state === 'create_backup' ? 'Backup läuft' : 'Backup erstellen'}"
-                                icon: "${state === 'create_backup' ? 'mdi:timer-sand' : ''}"
+                                name: >-
+                                  ${state === 'create_backup' ? 'Backup läuft' :
+                                  'Backup erstellen'}
+                                icon: >-
+                                  ${state === 'create_backup' ? 'mdi:timer-sand'
+                                  : ''}
                                 'on': true
                               tap_action:
                                 action: perform-action
@@ -6011,15 +6170,18 @@ views:
                           icon: mdi:package-up
                           origami_tiles:
                             state: >-
-                              ${(u => u.length === 0 ? 'Alles aktuell' : u.length === 1 ?
+                              ${(u => u.length === 0 ? 'Alles aktuell' :
+                              u.length === 1 ?
                               String(u[0].attributes.friendly_name ??
-                              u[0].entity_id).replace(' Update', '').replace('Home Assistant ', '') : u.length + '
-                              verfügbar')(Object.values(hass.states).filter((s) =>
-                              s.entity_id.startsWith('update.') && s.state === 'on'))}
+                              u[0].entity_id).replace(' Update',
+                              '').replace('Home Assistant ', '') : u.length + '
+                              verfügbar')(Object.values(hass.states).filter((s)
+                              => s.entity_id.startsWith('update.') && s.state
+                              === 'on'))}
                             state_color: >-
                               ${Object.values(hass.states).some((s) =>
-                              s.entity_id.startsWith('update.') && s.state === 'on') ?
-                              'var(--accent-color)' : ''}
+                              s.entity_id.startsWith('update.') && s.state ===
+                              'on') ? 'var(--accent-color)' : ''}
                           tap_action:
                             action: navigate
                             navigation_path: /config/updates
@@ -6028,7 +6190,8 @@ views:
                           icon: mdi:cloud-check-outline
                           origami_tiles:
                             state: >-
-                              ${(t => t ? t.charAt(0).toUpperCase() + t.slice(1) : '–')(ago(state))}
+                              ${(t => t ? t.charAt(0).toUpperCase() + t.slice(1)
+                              : '–')(ago(state))}
                           tap_action:
                             action: navigate
                             navigation_path: /config/backup
@@ -6037,8 +6200,6 @@ views:
                           tap_action:
                             action: navigate
                             navigation_path: /config/repairs
-
-                  # The load of the last 24 hours. It needs Plotly Graph Card.
                   - type: custom:plotly-graph
                     hours_to_show: 24
                     refresh_interval: auto
@@ -6236,7 +6397,6 @@ views:
                         range:
                           - 0
                           - 102
-                        # Only 50 and 100, so the axis stays clear of the times below it
                         tickvals:
                           - 50
                           - 100
