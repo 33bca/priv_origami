@@ -1,5 +1,5 @@
 // Makes the hero for make.py: three phones in 3D with the screens that make.py renders, turned toward the headline beside
-// them, on a plain background.
+// them, on a transparent background.
 //   node hero.mjs <hero.json>
 // hero.json has mode, screens (three screens of 412 × 915 at 2x from frame.mjs), headline and line (their lines), three
 // (the folder with three.js), fonts (the folder with Montserrat) and out.
@@ -18,11 +18,12 @@ const { chromium } = require('playwright');
 
 const spec = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 const dark = spec.mode === 'dark';
-// The image is 1800 × 800 at 2x, with the text on the left and the phones on the right
-const W = 1800, H = 800, DPR = 2;
-// A little lighter than the light page by day, and a dark gray at night that stands apart from GitHub's dark page
-const ground = dark ? '#242220' : '#FBFAF8';
+// The image is 1800 × 840 at 2x, with the text at the left edge and the phones filling the right. Its background is
+// transparent, so GitHub's page shows through.
+const W = 1800, H = 840, DPR = 2;
+// The theme's ink for the logo and the headline, and a softer one for the line
 const ink = dark ? '#E5E3DD' : '#4F4C49';
+const soft = dark ? '#ABA9A4' : '#83807E';
 
 // The phones are white with a soft sheen by day and nearly black by night. Their screens are 412 × 915 with rounded corners,
 // their bodies grow from the screen by the bevel, and they turn toward the text, the middle one a little higher.
@@ -38,7 +39,7 @@ const look = {
   shadow: dark ? { color: '#000000', opacity: 0.55 } : { color: '#4A3F35', opacity: 0.25 },
   key: { intensity: dark ? 1.2 : 1.5, dir: [0.75, -0.9, -2], spread: 0.22 },
   // The camera's lens and how much of the scene's height it sees, and where the phones' middle stands in the image
-  fov: 22, viewH: 1500, cx: 1271, cy: 400,
+  fov: 22, viewH: 1166, cx: 1222, cy: 410,
 };
 
 // Runs in the page and returns the phones on a transparent background
@@ -220,7 +221,7 @@ server.close();
 // The text: the logo as tall as the wordmark's capitals, the headline and the line, each a clear step smaller than the one
 // above, on one left edge and centered on the phones. Montserrat's capitals start 0.1585 em below the top of a line that is
 // 1 em high, and its letters reach 0.251 em below the baseline.
-const LOGO = 96, HEAD = 42, SUB = 26, SUB_LINE = 1.5, LEFT = 150;
+const LOGO = 96, HEAD = 42, SUB = 26, SUB_LINE = 1.5, LEFT = 10;
 const s = 0.7 * LOGO, t = s * 0.16, r = s * 0.11;
 const icon = `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}"><path fill="${ink}" fill-rule="evenodd" d="M${r},0 H${s - r} A${r},${r} 0 0 1 ${s},${r} V${s - r} A${r},${r} 0 0 1 ${s - r},${s} H${r} A${r},${r} 0 0 1 0,${s - r} V${r} A${r},${r} 0 0 1 ${r},0 Z M${t},${t} H${s - t} L${t},${s - t} Z"/></svg>`;
 const top = look.cy - (0.1585 * LOGO - ((SUB_LINE - 1.219) / 2 + 0.251) * SUB) / 2;
@@ -229,13 +230,13 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
 ${font(500)}
 ${font(700)}
 html, body { margin: 0; background: transparent; }
-.canvas { position: relative; width: ${W}px; height: ${H}px; overflow: hidden; border-radius: 32px; background: ${ground}; }
+.canvas { position: relative; width: ${W}px; height: ${H}px; overflow: hidden; }
 .phones { position: absolute; left: 0; top: 0; width: ${W}px; height: ${H}px; }
 .intro { position: absolute; left: ${LEFT}px; top: ${top}px; transform: translateY(-50%); color: ${ink}; font-family: 'Montserrat'; }
 .logo { display: flex; align-items: flex-start; gap: ${LOGO * 0.3}px; font-weight: 700; font-size: ${LOGO}px; line-height: 1; letter-spacing: -0.01em; }
 .logo svg { display: block; flex: none; margin: ${LOGO * 0.1585}px 0px 0px 0px; }
 .head { margin: 46px 0px 0px 0px; font-weight: 700; font-size: ${HEAD}px; line-height: 1.22; letter-spacing: -0.01em; }
-.line { margin: 26px 0px 0px 0px; font-weight: 500; font-size: ${SUB}px; line-height: ${SUB_LINE}; color: color-mix(in srgb, ${ink} 70%, ${ground}); }
+.line { margin: 26px 0px 0px 0px; font-weight: 500; font-size: ${SUB}px; line-height: ${SUB_LINE}; color: ${soft}; }
 </style></head><body><div class="canvas">
 <img class="phones" src="${phones}">
 <div class="intro"><div class="logo">${icon}<span>Origami</span></div>
