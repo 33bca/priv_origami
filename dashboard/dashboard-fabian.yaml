@@ -4982,66 +4982,179 @@ views:
           - type: custom:bubble-card
             card_type: pop-up
             hash: '#popup_oven'
+            name: Ofen
             button_type: name
             show_header: true
             show_name: true
             show_icon: false
-            card_layout: large
-            buttons_position: right
             scrolling_effect: false
+            popup_mode: fit-content
+            close_by_clicking_outside: true
             margin: 7px
-            margin_top_mobile: 22px
-            margin_top_desktop: 30%
-            bg_color: transparent
-            bg_opacity: '100'
-            bg_blur: '0'
-            hide_backdrop: false
+            margin_top_mobile: 80px
+            margin_top_desktop: 0px
+            width_desktop: 500px
+            with_bottom_offset: true
             modules:
               - origami_base
               - origami_popup
             origami_popup:
-              value_style: text
+              gap: var(--ha-space-4)
             cards:
-              - type: custom:bubble-card
-                card_type: button
-                button_type: state
-                entity: sensor.kuche_ofen_geratestatus
-                name: Backofen
-                icon: mdi:stove
-                modules:
-                  - origami_base
-                  - origami_oven
-                origami_base:
-                  solid_controls: false
-                  compact: false
-                  toggle: false
-                  tile: true
-                sub_button:
-                  main:
-                    - entity: switch.kuche_ofen_hohlraumlicht
-                      icon: mdi:lightbulb-outline
+              - type: vertical-stack
+                cards:
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: state
+                    entity: sensor.kuche_ofen_geratestatus
+                    name: Backofen
+                    icon: mdi:stove
+                    state_content: >-
+                      {%- set status = states('sensor.kuche_ofen_geratestatus') | lower -%}
+                      {%- set active = status in ['preheating', 'cooking', 'paused'] -%}
+                      {%- set program = states('select.kuche_ofen_program') -%}
+                      {%- set programs = {
+                        'Augratin': 'Gratin',
+                        'Bottom': 'Unterhitze',
+                        'Bread Baking': 'Brotbacken',
+                        'Conventional Cooking': 'Ober-/Unterhitze',
+                        'Defrost': 'Auftauen',
+                        'Dough Proving': 'Teig gehen lassen',
+                        'Drying': 'Dörren',
+                        'Frozen Food': 'Tiefkühlgerichte',
+                        'Full Steam': 'Volldampf',
+                        'Grill': 'Grill',
+                        'Grill Fan': 'Umluftgrill',
+                        'Humidity High': 'Hohe Feuchtigkeit',
+                        'Humidity Low': 'Niedrige Feuchtigkeit',
+                        'Humidity Medium': 'Mittlere Feuchtigkeit',
+                        'Keep Warm': 'Warmhalten',
+                        'Moist Fan Baking': 'Feuchte Umluft',
+                        'Pizza': 'Pizza',
+                        'Plate Warming': 'Teller wärmen',
+                        'Preserving': 'Einkochen',
+                        'Slow Cook': 'Niedrigtemperaturgaren',
+                        'Sous Vide': 'Sous-vide',
+                        'Steamify': 'Steamify',
+                        'Steam Regenerating': 'Dampf regenerieren',
+                        'True Fan': 'Heißluft',
+                        'Yoghurt': 'Joghurt'
+                      } -%}
+                      {%- set current = states('sensor.kuche_ofen_temperatur_anzeigen_c') | float(none) -%}
+                      {%- set target = states('number.kuche_ofen_zieltemperatur_c') | float(none) -%}
+                      {%- set duration = states('number.kuche_ofen_zieldauer') | float(0) -%}
+                      {%- set remaining = states('sensor.kuche_ofen_restlaufzeit') | float(-1) -%}
+                      {%- set changed = as_timestamp(states.sensor.kuche_ofen_restlaufzeit.last_changed, default=0) -%}
+                      {%- if active -%}
+                      {{ programs.get(program, program) }}
+                      {%- if current is not none and target is not none -%} · {{ current | int }}/{{ target | int }} °C{%- endif -%}
+                      {%- if duration > 0 and remaining >= 0 -%}
+                      · {% if remaining == 1 and as_timestamp(now()) - changed > 60 %}Done{% else %}Rest {{ remaining | int }} Min.{% endif %}
+                      {%- endif -%}
+                      {%- elif status in ['ready to start', 'ready_to_start'] -%}
+                      Startbereit
+                      {%- elif status in ['finished', 'end'] -%}
+                      Fertig
+                      {%- else -%}
+                      {{ states('sensor.kuche_ofen_geratestatus') }}
+                      {%- endif -%}
+                    modules:
+                      - origami_base
+                    origami_base:
+                      tile: true
+                      solid_controls: false
+                      compact: false
+                      toggle: false
+                    button_action:
                       tap_action:
-                        action: toggle
-                  bottom:
-                    - entity: sensor.kuche_ofen_temperatur_anzeigen_c
-                      show_icon: true
-                      icon: mdi:thermometer-lines
-                      state_content: state
-                    - entity: number.kuche_ofen_zieltemperatur_c
-                      show_icon: true
-                      icon: mdi:thermometer
-                      state_content: state
-                    - entity: number.kuche_ofen_zieldauer
-                      show_icon: true
-                      icon: mdi:timer-outline
-                      state_content: state
-                button_action:
-                  tap_action:
-                    action: navigate
-                    navigation_path: '#ofen'
-                state_content: state
-            popup_mode: default
-            name: Ofen
+                        action: more-info
+                    rows: auto
+                    sub_button:
+                      main:
+                        - entity: switch.kuche_ofen_hohlraumlicht
+                          name: Licht
+                          icon: mdi:lightbulb-outline
+                          tap_action:
+                            action: toggle
+                  - type: custom:bubble-card
+                    card_type: separator
+                    name: Status
+                    modules:
+                      - origami_base
+                      - origami_header
+                    origami_header:
+                      weight: medium
+                      icon_size: var(--icon-size-s)
+                  - type: custom:bubble-card
+                    card_type: sub-buttons
+                    modules:
+                      - origami_base
+                      - origami_tiles
+                    origami_tiles:
+                      layout: list
+                      slim: true
+                      dividers: true
+                    sub_button:
+                      main: []
+                      bottom:
+                        - entity: binary_sensor.kuche_ofen_turzustand
+                          name: Tür
+                          icon: mdi:door
+                          origami_tiles:
+                            state:
+                              'on': Offen
+                              'off': Geschlossen
+                        - entity: sensor.kuche_ofen_prozessphase
+                          name: Prozessphase
+                          icon: mdi:state-machine
+                          origami_tiles:
+                            state:
+                              'None': Keine
+                          origami_base:
+                            hidden: ${['', 'unknown', 'unavailable'].includes(state)}
+                        - entity: binary_sensor.kuche_ofen_lebensmittelsonde
+                          name: Lebensmittelsonde
+                          icon: mdi:thermometer-probe
+                          origami_tiles:
+                            state:
+                              'on': Eingelegt
+                              'off': Nicht eingelegt
+                        - entity: binary_sensor.kuche_ofen_wasserschale
+                          name: Wasserschale
+                          icon: mdi:cup-water
+                          origami_tiles:
+                            state:
+                              'on': Eingesetzt
+                              'off': Fehlt
+                        - entity: binary_sensor.kuche_ofen_wassertank_leer
+                          name: Wassertank
+                          icon: mdi:water-alert
+                          origami_tiles:
+                            state:
+                              'on': Leer
+                              'off': Ausreichend gefüllt
+                        - entity: binary_sensor.kuche_ofen_konnektivitatsstatus
+                          name: Verbindung
+                          icon: mdi:wifi
+                          origami_tiles:
+                            state:
+                              'on': Verbunden
+                              'off': Getrennt
+                        - entity: sensor.kuche_ofen_warnungen
+                          name: Warnungen
+                          icon: mdi:alert
+                          origami_tiles:
+                            state: >-
+                              ${Array.isArray(attr.active_alerts) ?
+                              (attr.active_alerts.length === 0 ? 'Keine Warnungen' :
+                              attr.active_alerts.length + ' Warnungen') : state}
+                        - entity: sensor.kuche_ofen_temperatur_des_lebensmittelfuhlers_anzeigen_c
+                          name: Sondentemperatur
+                          icon: mdi:thermometer-probe
+                          visibility:
+                            - condition: state
+                              entity: binary_sensor.kuche_ofen_lebensmittelsonde
+                              state: 'on'
           - type: custom:bubble-card
             card_type: pop-up
             hash: '#popup_music'
