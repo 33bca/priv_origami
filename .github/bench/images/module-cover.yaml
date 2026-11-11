@@ -1,0 +1,13 @@
+# A cover in motion and one at its closed position
+kind: panel
+cards:
+  - file: cover/card.yaml
+states:
+  cover.living_room_blind:
+    state: open
+    attributes: {friendly_name: Living room blind, current_position: 100, current_tilt_position: 0, is_closed: false, supported_features: 143}
+dark:
+  states:
+    cover.living_room_blind:
+      state: open
+      attributes: {friendly_name: Living room blind, current_position: 1, current_tilt_position: 40, is_closed: false, supported_features: 143}

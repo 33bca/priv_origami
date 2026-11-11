@@ -186,7 +186,12 @@ def shoot(mode, home, files, work, phone_page):
     """Takes the bench's shot of one mode, with the keys of home.yaml and then of each file, and returns the keys and the shot"""
     keys = layer(mode, home, *files)
     drop = keys.get('drop') or []
-    cards = [card(c) for c in keys.get('cards', []) if not (isinstance(c, dict) and c.get('file') in drop)]
+    cards = []
+    for c in keys.get('cards', []):
+        if isinstance(c, dict) and c.get('file') in drop:
+            continue
+        resolved = card(c)
+        cards.extend(resolved if isinstance(resolved, list) else [resolved])
     if any(f.get('home') for f in files):
         cards = [card(c) for c in home['home']] + cards
     scenario = {

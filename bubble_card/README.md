@@ -431,6 +431,8 @@ The plus and minus buttons need their own actions, such as a script that moves t
 
 The Cover module formats a cover's state line with its position, chooses the open or closed icon, and dims keys when their targets are reached. Open and close keys stay active while the cover moves. A preset key dims when position and tilt are within 0.6 percentage points of their targets.
 
+<img width="800" alt="A cover without tilt controls and a cover with the optional preset key, in light and dark mode" src="https://raw.githubusercontent.com/hazymorning/origami/main/images/v3/module-cover.webp">
+
 The [cover card](../dashboard/cover/card.yaml) shows how to use the module.
 
 ### Media
