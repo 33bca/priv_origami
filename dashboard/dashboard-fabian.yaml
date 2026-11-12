@@ -427,6 +427,51 @@ views:
               rows: auto
             sub_button:
               bottom:
+                - name: Moonlight
+                  entity: switch.wohnung_unifi_network_moonlight_tcp
+                  icon: mdi:shield-lock-outline
+                  force_icon: true
+                  show_icon: true
+                  origami_tiles:
+                    color: var(--red-color)
+                    state: >-
+                      ${((tcp, udp) => !['on', 'off'].includes(tcp) || !['on',
+                      'off'].includes(udp) ? 'Nicht verfügbar' : tcp === udp ?
+                      'Aktiv' :
+                      'Teilaktiv')(states('switch.wohnung_unifi_network_moonlight_tcp'),
+                      states('switch.wohnung_unifi_network_moonlight_udp'))}
+                    state_color: >-
+                      ${((tcp, udp) => ['on', 'off'].includes(tcp) && ['on',
+                      'off'].includes(udp) && tcp !== udp ? 'var(--error-color)'
+                      :
+                      '')(states('switch.wohnung_unifi_network_moonlight_tcp'),
+                      states('switch.wohnung_unifi_network_moonlight_udp'))}
+                  visibility:
+                    - condition: or
+                      conditions:
+                        - condition: state
+                          entity: switch.wohnung_unifi_network_moonlight_tcp
+                          state: 'on'
+                        - condition: state
+                          entity: switch.wohnung_unifi_network_moonlight_udp
+                          state: 'on'
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#popup_network'
+                - name: Punktfunk
+                  entity: switch.wohnung_unifi_network_punktfunk_udp
+                  icon: mdi:shield-lock-outline
+                  force_icon: true
+                  show_icon: true
+                  origami_tiles:
+                    color: var(--red-color)
+                  visibility:
+                    - condition: state
+                      entity: switch.wohnung_unifi_network_punktfunk_udp
+                      state: 'on'
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#popup_network'
                 - name: TV
                   entity: media_player.wohnzimmer_lg_oled_c5
                   icon: mdi:television
@@ -6159,6 +6204,13 @@ views:
                           tap_action:
                             action: navigate
                             navigation_path: '#popup_lights'
+                        - name: Netzwerk
+                          icon: mdi:router-network
+                          origami_tiles:
+                            state: Übersicht
+                          tap_action:
+                            action: navigate
+                            navigation_path: '#popup_network'
                         - name: Server
                           icon: mdi:server
                           origami_tiles:
@@ -6166,6 +6218,456 @@ views:
                           tap_action:
                             action: navigate
                             navigation_path: '#popup_server'
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#popup_network'
+            name: Netzwerk
+            show_header: true
+            popup_mode: fit-content
+            close_by_clicking_outside: true
+            scrolling_effect: false
+            margin: 7px
+            margin_top_mobile: 80px
+            margin_top_desktop: 0px
+            width_desktop: 500px
+            button_type: name
+            show_icon: false
+            with_bottom_offset: true
+            modules:
+              - origami_base
+              - origami_popup
+            origami_popup:
+              gap: var(--ha-space-4)
+            sub_button:
+              main: []
+              bottom: []
+            cards:
+              - type: vertical-stack
+                cards:
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: state
+                    entity: sensor.reduit_quellenstrasse_41f_zustand
+                    name: Gateway
+                    icon: mdi:router-network
+                    state_content: state
+                    modules:
+                      - origami_base
+                    tap_action:
+                      action: more-info
+                    button_action:
+                      tap_action:
+                        action: more-info
+                    sub_button:
+                      main:
+                        - entity: sensor.reduit_quellenstrasse_41f_clients
+                          show_icon: false
+                          origami_base:
+                            label: Clients
+                          state_content: state
+                        - entity: sensor.reduit_quellenstrasse_41f_cloudflare_wan_latenz
+                          show_icon: false
+                          origami_base:
+                            label: Latenz
+                          state_content: state
+                    rows: auto
+                  - type: custom:bubble-card
+                    card_type: separator
+                    name: Netzwerkgeräte
+                    modules:
+                      - origami_base
+                      - origami_header
+                  - type: custom:bubble-card
+                    card_type: sub-buttons
+                    modules:
+                      - origami_base
+                      - origami_tiles
+                    origami_tiles:
+                      layout: list
+                      dividers: true
+                    sub_button:
+                      main: []
+                      bottom:
+                        - entity: sensor.reduit_quellenstrasse_41f_zustand
+                          name: Gateway
+                          icon: mdi:router-network
+                          origami_tiles:
+                            state: >-
+                              ${(cpu => (state === 'connected' ? 'Verbunden' :
+                              state) + ' · CPU ' + (cpu == null ||
+                              !Number.isFinite(Number(cpu)) ? '–' : num(cpu, 0,
+                              '%')))(hass.states['sensor.reduit_quellenstrasse_41f_cpu_auslastung']?.state)}
+                          tap_action:
+                            action: more-info
+                        - entity: sensor.reduit_usw_pro_max_16_zustand
+                          name: Core Switch
+                          icon: mdi:lan
+                          origami_tiles:
+                            state: >-
+                              ${(cpu => (state === 'connected' ? 'Verbunden' :
+                              state) + ' · CPU ' + (cpu == null ||
+                              !Number.isFinite(Number(cpu)) ? '–' : num(cpu, 0,
+                              '%')))(hass.states['sensor.reduit_usw_pro_max_16_cpu_auslastung']?.state)}
+                          tap_action:
+                            action: more-info
+                        - entity: sensor.wohnzimmer_usw_flex_2_5g_5_zustand
+                          name: Wohnzimmer Switch
+                          icon: mdi:lan
+                          origami_tiles:
+                            state: >-
+                              ${(cpu => (state === 'connected' ? 'Verbunden' :
+                              state) + ' · CPU ' + (cpu == null ||
+                              !Number.isFinite(Number(cpu)) ? '–' : num(cpu, 0,
+                              '%')))(hass.states['sensor.wohnzimmer_usw_flex_2_5g_5_cpu_auslastung']?.state)}
+                          tap_action:
+                            action: more-info
+                        - entity: sensor.wohnzimmer_u7_pro_zustand
+                          name: Access Point
+                          icon: mdi:access-point
+                          origami_tiles:
+                            state: >-
+                              ${(cpu => (state === 'connected' ? 'Verbunden' :
+                              state) + ' · CPU ' + (cpu == null ||
+                              !Number.isFinite(Number(cpu)) ? '–' : num(cpu, 0,
+                              '%')))(hass.states['sensor.wohnzimmer_u7_pro_cpu_auslastung']?.state)}
+                          tap_action:
+                            action: more-info
+                  - type: custom:bubble-card
+                    card_type: separator
+                    name: WLAN
+                    modules:
+                      - origami_base
+                      - origami_header
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: state
+                    entity: switch.wohnung_tatooinenet_aktiviert
+                    name: TatooineNet
+                    icon: mdi:home-automation
+                    state_content: >-
+                      {% set wlan =
+                      states('switch.wohnung_tatooinenet_aktiviert') %} {% set
+                      clients = states('sensor.wohnung_tatooinenet_clients') %}
+                      {% if wlan == 'off' %}Aus{% elif wlan != 'on' %}Nicht
+                      verfügbar{% elif clients in ['unknown', 'unavailable']
+                      %}Clients nicht verfügbar{% else %}{{ clients }} Clients{%
+                      endif %}
+                    modules:
+                      - origami_base
+                    origami_base:
+                      join: first
+                      toggle: true
+                      tile: true
+                    tap_action:
+                      action: more-info
+                    button_action:
+                      tap_action:
+                        action: more-info
+                    sub_button:
+                      main:
+                        - icon: mdi:circle
+                          show_background: true
+                          tap_action:
+                            action: toggle
+                            confirmation:
+                              text: TatooineNet ein- oder ausschalten?
+                    rows: auto
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: state
+                    entity: switch.wohnung_tatooinespeed_aktiviert
+                    name: TatooineSpeed
+                    icon: mdi:speedometer
+                    state_content: >-
+                      {% set wlan =
+                      states('switch.wohnung_tatooinespeed_aktiviert') %} {% set
+                      clients = states('sensor.wohnung_tatooinespeed_clients')
+                      %} {% if wlan == 'off' %}Aus{% elif wlan != 'on' %}Nicht
+                      verfügbar{% elif clients in ['unknown', 'unavailable']
+                      %}Clients nicht verfügbar{% else %}{{ clients }} Clients{%
+                      endif %}
+                    modules:
+                      - origami_base
+                    origami_base:
+                      join: middle
+                      toggle: true
+                      tile: true
+                    styles: |-
+                      ha-card {
+                        --org-join-above: calc(2 * var(--ha-space-2) + var(--org-line-width));
+                      }
+                      .bubble-wrapper::before {
+                        content: "";
+                        position: absolute;
+                        top: var(--ha-space-2);
+                        inset-inline: var(--org-pad);
+                        height: var(--org-line-width);
+                        background: var(--org-line-color);
+                        pointer-events: none;
+                        z-index: 1;
+                      }
+                    tap_action:
+                      action: more-info
+                    button_action:
+                      tap_action:
+                        action: more-info
+                    sub_button:
+                      main:
+                        - icon: mdi:circle
+                          show_background: true
+                          tap_action:
+                            action: toggle
+                            confirmation:
+                              text: TatooineSpeed ein- oder ausschalten?
+                    rows: auto
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: state
+                    entity: switch.wohnung_tatooineiot_aktiviert
+                    name: TatooineIOT
+                    icon: mdi:devices
+                    state_content: >-
+                      {% set wlan =
+                      states('switch.wohnung_tatooineiot_aktiviert') %} {% set
+                      clients = states('sensor.wohnung_tatooineiot_clients') %}
+                      {% if wlan == 'off' %}Aus{% elif wlan != 'on' %}Nicht
+                      verfügbar{% elif clients in ['unknown', 'unavailable']
+                      %}Clients nicht verfügbar{% else %}{{ clients }} Clients{%
+                      endif %}
+                    modules:
+                      - origami_base
+                    origami_base:
+                      join: middle
+                      toggle: true
+                      tile: true
+                    styles: |-
+                      ha-card {
+                        --org-join-above: calc(2 * var(--ha-space-2) + var(--org-line-width));
+                      }
+                      .bubble-wrapper::before {
+                        content: "";
+                        position: absolute;
+                        top: var(--ha-space-2);
+                        inset-inline: var(--org-pad);
+                        height: var(--org-line-width);
+                        background: var(--org-line-color);
+                        pointer-events: none;
+                        z-index: 1;
+                      }
+                    tap_action:
+                      action: more-info
+                    button_action:
+                      tap_action:
+                        action: more-info
+                    sub_button:
+                      main:
+                        - icon: mdi:circle
+                          show_background: true
+                          tap_action:
+                            action: toggle
+                            confirmation:
+                              text: TatooineIOT ein- oder ausschalten?
+                    rows: auto
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: state
+                    entity: switch.wohnung_tatooineguest_aktiviert
+                    name: TatooineGuest
+                    icon: mdi:account-arrow-right
+                    state_content: >-
+                      {% set wlan =
+                      states('switch.wohnung_tatooineguest_aktiviert') %} {% set
+                      clients = states('sensor.wohnung_tatooineguest_clients')
+                      %} {% if wlan == 'off' %}Aus{% elif wlan != 'on' %}Nicht
+                      verfügbar{% elif clients in ['unknown', 'unavailable']
+                      %}Clients nicht verfügbar{% else %}{{ clients }} Clients{%
+                      endif %}
+                    modules:
+                      - origami_base
+                    origami_base:
+                      join: last
+                      toggle: true
+                      tile: true
+                    styles: |-
+                      ha-card {
+                        --org-join-above: calc(2 * var(--ha-space-2) + var(--org-line-width));
+                      }
+                      .bubble-wrapper::before {
+                        content: "";
+                        position: absolute;
+                        top: var(--ha-space-2);
+                        inset-inline: var(--org-pad);
+                        height: var(--org-line-width);
+                        background: var(--org-line-color);
+                        pointer-events: none;
+                        z-index: 1;
+                      }
+                    tap_action:
+                      action: more-info
+                    button_action:
+                      tap_action:
+                        action: more-info
+                    sub_button:
+                      main:
+                        - icon: mdi:circle
+                          show_background: true
+                          tap_action:
+                            action: toggle
+                            confirmation:
+                              text: TatooineGuest ein- oder ausschalten?
+                    rows: auto
+                  - type: custom:bubble-card
+                    card_type: separator
+                    name: Firewall
+                    modules:
+                      - origami_base
+                      - origami_header
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: state
+                    entity: switch.wohnung_unifi_network_moonlight_tcp
+                    name: Moonlight
+                    icon: mdi:shield-lock-outline
+                    modules:
+                      - origami_base
+                    origami_base:
+                      join: first
+                      toggle: true
+                      tile: true
+                    styles: |-
+                      ${(() => {
+                        const tcp = hass.states['switch.wohnung_unifi_network_moonlight_tcp']?.state;
+                        const udp = hass.states['switch.wohnung_unifi_network_moonlight_udp']?.state;
+                        return ['on', 'off'].includes(tcp) && ['on', 'off'].includes(udp) && tcp !== udp
+                          ? 'ha-card { --org-chip-ink: var(--error-color) !important; }' : '';
+                      })()}
+                    tap_action:
+                      action: more-info
+                    button_action:
+                      tap_action:
+                        action: more-info
+                    sub_button:
+                      main:
+                        - icon: mdi:circle
+                          show_background: true
+                          origami_base:
+                            hidden: >-
+                              ${states('switch.wohnung_unifi_network_moonlight_tcp')
+                              === 'on' ||
+                              (states('switch.wohnung_unifi_network_moonlight_tcp')
+                              === 'off' &&
+                              states('switch.wohnung_unifi_network_moonlight_udp')
+                              === 'on')}
+                            disabled: >-
+                              ${!['on',
+                              'off'].includes(states('switch.wohnung_unifi_network_moonlight_tcp'))
+                              || !['on',
+                              'off'].includes(states('switch.wohnung_unifi_network_moonlight_udp'))}
+                          tap_action:
+                            action: perform-action
+                            perform_action: switch.turn_on
+                            target:
+                              entity_id:
+                                - switch.wohnung_unifi_network_moonlight_tcp
+                                - switch.wohnung_unifi_network_moonlight_udp
+                            confirmation:
+                              text: Beide Moonlight-Firewallregeln aktivieren?
+                        - icon: mdi:circle
+                          show_background: true
+                          origami_base:
+                            hidden: >-
+                              ${states('switch.wohnung_unifi_network_moonlight_tcp')
+                              !== 'on' ||
+                              states('switch.wohnung_unifi_network_moonlight_udp')
+                              === 'on'}
+                            disabled: >-
+                              ${!['on',
+                              'off'].includes(states('switch.wohnung_unifi_network_moonlight_udp'))}
+                          tap_action:
+                            action: perform-action
+                            perform_action: switch.turn_on
+                            target:
+                              entity_id:
+                                - switch.wohnung_unifi_network_moonlight_tcp
+                                - switch.wohnung_unifi_network_moonlight_udp
+                            confirmation:
+                              text: Beide Moonlight-Firewallregeln aktivieren?
+                        - entity: switch.wohnung_unifi_network_moonlight_udp
+                          icon: mdi:circle
+                          show_background: true
+                          origami_base:
+                            hidden: >-
+                              ${states('switch.wohnung_unifi_network_moonlight_tcp')
+                              !== 'off' ||
+                              states('switch.wohnung_unifi_network_moonlight_udp')
+                              !== 'on'}
+                          tap_action:
+                            action: perform-action
+                            perform_action: switch.turn_on
+                            target:
+                              entity_id:
+                                - switch.wohnung_unifi_network_moonlight_tcp
+                                - switch.wohnung_unifi_network_moonlight_udp
+                            confirmation:
+                              text: Beide Moonlight-Firewallregeln aktivieren?
+                        - icon: mdi:circle
+                          show_background: true
+                          origami_base:
+                            hidden: >-
+                              ${states('switch.wohnung_unifi_network_moonlight_tcp')
+                              !== 'on' ||
+                              states('switch.wohnung_unifi_network_moonlight_udp')
+                              !== 'on'}
+                          tap_action:
+                            action: perform-action
+                            perform_action: switch.turn_off
+                            target:
+                              entity_id:
+                                - switch.wohnung_unifi_network_moonlight_tcp
+                                - switch.wohnung_unifi_network_moonlight_udp
+                            confirmation:
+                              text: Beide Moonlight-Firewallregeln deaktivieren?
+                    rows: auto
+                  - type: custom:bubble-card
+                    card_type: button
+                    button_type: state
+                    entity: switch.wohnung_unifi_network_punktfunk_udp
+                    name: Punktfunk
+                    icon: mdi:shield-lock-outline
+                    modules:
+                      - origami_base
+                    origami_base:
+                      join: last
+                      toggle: true
+                      tile: true
+                    styles: |-
+                      ha-card {
+                        --org-join-above: calc(2 * var(--ha-space-2) + var(--org-line-width));
+                      }
+                      .bubble-wrapper::before {
+                        content: "";
+                        position: absolute;
+                        top: var(--ha-space-2);
+                        inset-inline: var(--org-pad);
+                        height: var(--org-line-width);
+                        background: var(--org-line-color);
+                        pointer-events: none;
+                        z-index: 1;
+                      }
+                    tap_action:
+                      action: more-info
+                    button_action:
+                      tap_action:
+                        action: more-info
+                    sub_button:
+                      main:
+                        - icon: mdi:circle
+                          show_background: true
+                          tap_action:
+                            action: toggle
+                            confirmation:
+                              text: Punktfunk-Firewallregel ein- oder ausschalten?
+                    rows: auto
           - type: custom:bubble-card
             card_type: pop-up
             hash: '#popup_server'
