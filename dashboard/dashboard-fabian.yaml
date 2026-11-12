@@ -6201,6 +6201,9 @@ views:
                             navigation_path: /map
                         - name: Lichter
                           icon: mdi:lightbulb
+                          origami_tiles:
+                            state: >-
+                              ${((lights) => lights.some(light => ['on', 'off'].includes(light.state)) ? ((count) => count + (count === 1 ? ' Licht an' : ' Lichter an'))(lights.filter(light => light.state === 'on').length) : 'Nicht verfügbar')(Object.values(hass.states).filter(light => light.entity_id.startsWith('light.') && !light.attributes.entity_id))}
                           tap_action:
                             action: navigate
                             navigation_path: '#popup_lights'
