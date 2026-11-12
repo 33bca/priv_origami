@@ -5055,10 +5055,11 @@ views:
                     name: Backofen
                     icon: mdi:stove
                     state_content: >-
-                      {%- set status = states('sensor.kuche_ofen_geratestatus') | lower -%}
-                      {%- set active = status in ['preheating', 'cooking', 'paused'] -%}
-                      {%- set program = states('select.kuche_ofen_program') -%}
-                      {%- set programs = {
+                      {%- set status = states('sensor.kuche_ofen_geratestatus')
+                      | lower -%} {%- set active = status in ['preheating',
+                      'cooking', 'paused'] -%} {%- set program =
+                      states('select.kuche_ofen_program') -%} {%- set programs =
+                      {
                         'Augratin': 'Gratin',
                         'Bottom': 'Unterhitze',
                         'Bread Baking': 'Brotbacken',
@@ -5084,25 +5085,25 @@ views:
                         'Steam Regenerating': 'Dampf regenerieren',
                         'True Fan': 'Heißluft',
                         'Yoghurt': 'Joghurt'
-                      } -%}
-                      {%- set current = states('sensor.kuche_ofen_temperatur_anzeigen_c') | float(none) -%}
-                      {%- set target = states('number.kuche_ofen_zieltemperatur_c') | float(none) -%}
-                      {%- set duration = states('number.kuche_ofen_zieldauer') | float(0) -%}
-                      {%- set remaining = states('sensor.kuche_ofen_restlaufzeit') | float(-1) -%}
-                      {%- set changed = as_timestamp(states.sensor.kuche_ofen_restlaufzeit.last_changed, default=0) -%}
-                      {%- if active -%}
-                      {{ programs.get(program, program) }}
-                      {%- if current is not none and target is not none -%} · {{ current | int }}/{{ target | int }} °C{%- endif -%}
-                      {%- if duration > 0 and remaining >= 0 -%}
-                      · {% if remaining == 1 and as_timestamp(now()) - changed > 60 %}Done{% else %}Rest {{ remaining | int }} Min.{% endif %}
-                      {%- endif -%}
-                      {%- elif status in ['ready to start', 'ready_to_start'] -%}
-                      Startbereit
-                      {%- elif status in ['finished', 'end'] -%}
-                      Fertig
-                      {%- else -%}
-                      {{ states('sensor.kuche_ofen_geratestatus') }}
-                      {%- endif -%}
+                      } -%} {%- set current =
+                      states('sensor.kuche_ofen_temperatur_anzeigen_c') |
+                      float(none) -%} {%- set target =
+                      states('number.kuche_ofen_zieltemperatur_c') | float(none)
+                      -%} {%- set duration =
+                      states('number.kuche_ofen_zieldauer') | float(0) -%} {%-
+                      set remaining = states('sensor.kuche_ofen_restlaufzeit') |
+                      float(-1) -%} {%- set changed =
+                      as_timestamp(states.sensor.kuche_ofen_restlaufzeit.last_changed,
+                      default=0) -%} {%- if active -%} {{ programs.get(program,
+                      program) }} {%- if current is not none and target is not
+                      none -%} · {{ current | int }}/{{ target | int }} °C{%-
+                      endif -%} {%- if duration > 0 and remaining >= 0 -%} · {%
+                      if remaining == 1 and as_timestamp(now()) - changed > 60
+                      %}Done{% else %}Rest {{ remaining | int }} Min.{% endif %}
+                      {%- endif -%} {%- elif status in ['ready to start',
+                      'ready_to_start'] -%} Startbereit {%- elif status in
+                      ['finished', 'end'] -%} Fertig {%- else -%} {{
+                      states('sensor.kuche_ofen_geratestatus') }} {%- endif -%}
                     modules:
                       - origami_base
                     origami_base:
@@ -5154,7 +5155,7 @@ views:
                           icon: mdi:state-machine
                           origami_tiles:
                             state:
-                              'None': Keine
+                              None: Keine
                           origami_base:
                             hidden: ${['', 'unknown', 'unavailable'].includes(state)}
                         - entity: binary_sensor.kuche_ofen_lebensmittelsonde
@@ -5191,8 +5192,9 @@ views:
                           origami_tiles:
                             state: >-
                               ${Array.isArray(attr.active_alerts) ?
-                              (attr.active_alerts.length === 0 ? 'Keine Warnungen' :
-                              attr.active_alerts.length + ' Warnungen') : state}
+                              (attr.active_alerts.length === 0 ? 'Keine
+                              Warnungen' : attr.active_alerts.length + '
+                              Warnungen') : state}
                         - entity: sensor.kuche_ofen_temperatur_des_lebensmittelfuhlers_anzeigen_c
                           name: Sondentemperatur
                           icon: mdi:thermometer-probe
