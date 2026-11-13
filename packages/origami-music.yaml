@@ -1,0 +1,28 @@
+input_select:
+  # The speaker shown in the music pop-up
+  selected_speaker:
+    name: Aktiver Lautsprecher
+    options:
+      - media_player.wohnzimmer
+      - media_player.eingang
+      - media_player.roam
+      - media_player.buro
+
+template:
+  - number:
+      - name: Gruppenlautstärke
+        unique_id: group_volume
+        default_entity_id: number.group_volume
+        unit_of_measurement: "%"
+        min: 0
+        max: 100
+        step: 1
+        state: >
+          {% set s = states('input_select.selected_speaker') %}
+          {% set v = (state_attr(s, 'group_members') or [s]) | map('state_attr', 'volume_level') | select('number') | list %}
+          {{ (v | sum / v | count * 100) | round if v else 0 }}
+        set_value:
+          - action: script.set_group_volume
+            data:
+              speaker: input_select.selected_speaker
+              volume: "{{ value }}"

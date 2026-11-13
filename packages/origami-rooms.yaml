@@ -1,0 +1,5 @@
+input_boolean:
+  # Opens the climate table under the rooms header
+  room_climate_card:
+    name: Zimmer Klima-Tabelle
+    icon: mdi:table

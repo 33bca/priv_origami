@@ -12,71 +12,27 @@ views:
         cards:
           - type: grid
             square: false
-            columns: 1
-            visibility:
-              - condition: screen
-                media_query: '(min-width: 768px)'
-            grid_options:
-              columns: 24
-              rows: auto
-            cards:
-              - type: custom:paper-buttons-row
-                base_config:
-                  layout: icon
-                  styles:
-                    button:
-                      height: 0px
-                      pointer-events: none
-                    icon:
-                      --mdc-icon-size: 0px
-                buttons:
-                  - icon: mdi:backspace-reverse
-          - type: grid
-            square: false
             columns: 2
             cards:
-              - type: custom:paper-buttons-row
-                extra_styles: ':host { display: block; height: 100% }'
-                styles:
-                  flex-direction: column
-                  justify-content: center
-                  height: 100%
-                  gap: var(--ha-space-1)
-                base_config:
-                  layout: state
-                  tap_action:
-                    action: none
-                  styles:
-                    button:
-                      min-height: unset
-                      padding: 0px
-                      align-self: flex-start
-                      justify-content: flex-start
-                      pointer-events: none
-                    state:
-                      padding: 0px
-                buttons:
-                  - name: user
-                    state: '{{ user }}'
-                    styles:
-                      name:
-                        font-size: var(--ha-font-size-s)
-                        font-weight: var(--ha-font-weight-bold)
-                        color: var(--secondary-text-color)
-                        white-space: nowrap
-                        overflow: hidden
-                        text-overflow: ellipsis
-                        max-width: 100px
-                  - entity: sensor.greetings
-                    state:
-                      case: first
-                    styles:
-                      state:
-                        font-size: var(--ha-font-size-l)
-                        font-weight: var(--ha-font-weight-bold)
-                        white-space: nowrap
-                        overflow: hidden
-                        text-overflow: ellipsis
+              - type: custom:bubble-card
+                card_type: separator
+                name: "${(h => h < 5 ? 'Noch wach?' : h < 22 ? 'Na, hallo!' : 'Schlaf gut!')(new Date().getHours())}"
+                modules:
+                  - origami_base
+                  - origami_header
+                origami_header:
+                  value_position: above
+                  value_size: var(--ha-font-size-s)
+                  value_max_width: 100px
+                sub_button:
+                  main:
+                    - show_icon: false
+                      scrolling_effect: false
+                      origami_header:
+                        name: "${hass.user?.name ?? ''}"
+                        name_color: var(--secondary-text-color)
+                      tap_action:
+                        action: none
               - type: custom:origami-notifications
                 label: alarm
                 weather: weather.weather_at_4310
@@ -615,10 +571,14 @@ views:
             sub_button:
               main:
                 - name: Temperature
-                  entity: sensor.climate_home
+                  entity: sensor.thermometer_gang_temperatur
                   icon: mdi:thermometer
                   origami_header:
-                    name: ${num(attr.temperature_average)}°
+                    name: >-
+                      ${(t => t.length ? num(t.reduce((a, b) => a + b, 0) / t.length, 0) + '°' : '–')(
+                      ['sensor.thermometer_gang_temperatur', 'sensor.thermometer_schlafzimmer_temperatur',
+                      'sensor.thermometer_buero_temperatur', 'sensor.thermometer_bad_temperatur',
+                      'sensor.thermometer_dusche_temperatur'].map(id => parseFloat(states(id))).filter(Number.isFinite))}
                   tap_action:
                     action: perform-action
                     perform_action: input_boolean.toggle
@@ -627,16 +587,23 @@ views:
                   hold_action:
                     action: more-info
                 - name: Windows
-                  entity: sensor.climate_home
+                  entity: binary_sensor.buro_fenster
                   icon: mdi:window-closed-variant
-                  state_content: windows_open
                   origami_header:
-                    icon: '${attr.windows_open > 0 ? ''mdi:window-open-variant'' : ''''}'
+                    name: >-
+                      ${['binary_sensor.buro_fenster', 'binary_sensor.schlafzimmer_fenster',
+                      'binary_sensor.wohnzimmer_fenster'].filter(id => states(id) === 'on').length}
+                    icon: >-
+                      ${['binary_sensor.buro_fenster', 'binary_sensor.schlafzimmer_fenster',
+                      'binary_sensor.wohnzimmer_fenster'].some(id => states(id) === 'on') ? 'mdi:window-open-variant' : ''}
                     name_color: >-
-                      ${attr.windows_open > 0 ?
+                      ${['binary_sensor.buro_fenster', 'binary_sensor.schlafzimmer_fenster',
+                      'binary_sensor.wohnzimmer_fenster'].some(id => states(id) === 'on') ?
                       'var(--state-binary_sensor-window-on-color)' :
                       'var(--secondary-text-color)'}
-                    background: '${attr.windows_open > 0 ? ''var(--tint)'' : ''''}'
+                    background: >-
+                      ${['binary_sensor.buro_fenster', 'binary_sensor.schlafzimmer_fenster',
+                      'binary_sensor.wohnzimmer_fenster'].some(id => states(id) === 'on') ? 'var(--tint)' : ''}
                   tap_action:
                     action: perform-action
                     perform_action: input_boolean.toggle
@@ -666,7 +633,13 @@ views:
               columns:
                 - name: room
                   icon: mdi:circle
-                  color_template: ${attr.color_code ?? "transparent"}
+                  color_template: >-
+                    ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                    [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                    [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                    [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                    .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                    (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                 - name: window
                   icon_states:
                     'on': mdi:window-open-variant
@@ -682,24 +655,28 @@ views:
                     'off': mdi:door-closed
                 - name: temperature
                   icon_template: >-
-                    ${attr.temp_rank === 'warmest' ? 'mdi:arrow-up' :
-                    attr.temp_rank === 'coldest' ? 'mdi:arrow-down' :
-                    'mdi:thermometer'}
+                    ${(t => ['sensor.thermometer_gang_temperatur', 'sensor.thermometer_schlafzimmer_temperatur', 'sensor.thermometer_buero_temperatur', 'sensor.thermometer_bad_temperatur', 'sensor.thermometer_dusche_temperatur'].includes(entity) && +state === Math.max(...t) && +state > Math.min(...t) ? 'mdi:arrow-up' :
+                    ['sensor.thermometer_gang_temperatur', 'sensor.thermometer_schlafzimmer_temperatur', 'sensor.thermometer_buero_temperatur', 'sensor.thermometer_bad_temperatur', 'sensor.thermometer_dusche_temperatur'].includes(entity) && +state === Math.min(...t) && +state < Math.max(...t) ? 'mdi:arrow-down' : 'mdi:thermometer')(
+                    ['sensor.thermometer_gang_temperatur', 'sensor.thermometer_schlafzimmer_temperatur', 'sensor.thermometer_buero_temperatur', 'sensor.thermometer_bad_temperatur', 'sensor.thermometer_dusche_temperatur'].map((id) => parseFloat(states(id))).filter((v) => !isNaN(v)))}
                   color_template: >-
-                    ${attr.temp_rank === 'coldest' ?
-                    'var(--secondary-text-color)' : ''}
-                  text_template: ${num(attr.temperature)}°
-                  'on': ${attr.temp_rank === 'warmest'}
+                    ${(t => ['sensor.thermometer_gang_temperatur', 'sensor.thermometer_schlafzimmer_temperatur', 'sensor.thermometer_buero_temperatur', 'sensor.thermometer_bad_temperatur', 'sensor.thermometer_dusche_temperatur'].includes(entity) && +state === Math.min(...t) && +state < Math.max(...t) ? 'var(--secondary-text-color)' : '')(
+                    ['sensor.thermometer_gang_temperatur', 'sensor.thermometer_schlafzimmer_temperatur', 'sensor.thermometer_buero_temperatur', 'sensor.thermometer_bad_temperatur', 'sensor.thermometer_dusche_temperatur'].map((id) => parseFloat(states(id))).filter((v) => !isNaN(v)))}
+                  text_template: ${num(state, 0)}°
+                  'on': >-
+                    ${(t => ['sensor.thermometer_gang_temperatur', 'sensor.thermometer_schlafzimmer_temperatur', 'sensor.thermometer_buero_temperatur', 'sensor.thermometer_bad_temperatur', 'sensor.thermometer_dusche_temperatur'].includes(entity) && +state === Math.max(...t) && +state > Math.min(...t))(
+                    ['sensor.thermometer_gang_temperatur', 'sensor.thermometer_schlafzimmer_temperatur', 'sensor.thermometer_buero_temperatur', 'sensor.thermometer_bad_temperatur', 'sensor.thermometer_dusche_temperatur'].map((id) => parseFloat(states(id))).filter((v) => !isNaN(v)))}
                 - name: humidity
                   icon_template: >-
-                    ${attr.humidity_rank === 'most_humid' ? 'mdi:arrow-up' :
-                    attr.humidity_rank === 'driest' ? 'mdi:arrow-down' :
-                    'mdi:water-percent'}
+                    ${(t => ['sensor.thermometer_gang_luftfeuchtigkeit', 'sensor.thermometer_schlafzimmer_luftfeuchtigkeit', 'sensor.thermometer_buero_luftfeuchtigkeit', 'sensor.thermometer_bad_luftfeuchtigkeit', 'sensor.thermometer_dusche_luftfeuchtigkeit'].includes(entity) && +state === Math.max(...t) && +state > Math.min(...t) ? 'mdi:arrow-up' :
+                    ['sensor.thermometer_gang_luftfeuchtigkeit', 'sensor.thermometer_schlafzimmer_luftfeuchtigkeit', 'sensor.thermometer_buero_luftfeuchtigkeit', 'sensor.thermometer_bad_luftfeuchtigkeit', 'sensor.thermometer_dusche_luftfeuchtigkeit'].includes(entity) && +state === Math.min(...t) && +state < Math.max(...t) ? 'mdi:arrow-down' : 'mdi:water-percent')(
+                    ['sensor.thermometer_gang_luftfeuchtigkeit', 'sensor.thermometer_schlafzimmer_luftfeuchtigkeit', 'sensor.thermometer_buero_luftfeuchtigkeit', 'sensor.thermometer_bad_luftfeuchtigkeit', 'sensor.thermometer_dusche_luftfeuchtigkeit'].map((id) => parseFloat(states(id))).filter((v) => !isNaN(v)))}
                   color_template: >-
-                    ${attr.humidity_rank === 'driest' ?
-                    'var(--secondary-text-color)' : ''}
-                  text_template: ${num(attr.humidity, 0, '%')}
-                  'on': ${attr.humidity_rank === 'most_humid'}
+                    ${(t => ['sensor.thermometer_gang_luftfeuchtigkeit', 'sensor.thermometer_schlafzimmer_luftfeuchtigkeit', 'sensor.thermometer_buero_luftfeuchtigkeit', 'sensor.thermometer_bad_luftfeuchtigkeit', 'sensor.thermometer_dusche_luftfeuchtigkeit'].includes(entity) && +state === Math.min(...t) && +state < Math.max(...t) ? 'var(--secondary-text-color)' : '')(
+                    ['sensor.thermometer_gang_luftfeuchtigkeit', 'sensor.thermometer_schlafzimmer_luftfeuchtigkeit', 'sensor.thermometer_buero_luftfeuchtigkeit', 'sensor.thermometer_bad_luftfeuchtigkeit', 'sensor.thermometer_dusche_luftfeuchtigkeit'].map((id) => parseFloat(states(id))).filter((v) => !isNaN(v)))}
+                  text_template: ${num(state, 0, '%')}
+                  'on': >-
+                    ${(t => ['sensor.thermometer_gang_luftfeuchtigkeit', 'sensor.thermometer_schlafzimmer_luftfeuchtigkeit', 'sensor.thermometer_buero_luftfeuchtigkeit', 'sensor.thermometer_bad_luftfeuchtigkeit', 'sensor.thermometer_dusche_luftfeuchtigkeit'].includes(entity) && +state === Math.max(...t) && +state > Math.min(...t))(
+                    ['sensor.thermometer_gang_luftfeuchtigkeit', 'sensor.thermometer_schlafzimmer_luftfeuchtigkeit', 'sensor.thermometer_buero_luftfeuchtigkeit', 'sensor.thermometer_bad_luftfeuchtigkeit', 'sensor.thermometer_dusche_luftfeuchtigkeit'].map((id) => parseFloat(states(id))).filter((v) => !isNaN(v)))}
             grid_options:
               columns: full
               rows: auto
@@ -717,7 +694,7 @@ views:
               bottom:
                 - name: Wohnen
                   group:
-                    - entity: sensor.climate_living_room
+                    - entity: sensor.thermometer_gang_temperatur
                       css_class: room
                       name: Wohnen
                       show_name: true
@@ -730,19 +707,19 @@ views:
                       css_class: thermostat
                     - entity: binary_sensor.nuki_eingang_locked
                       css_class: door
-                    - entity: sensor.climate_living_room
+                    - entity: sensor.thermometer_gang_temperatur
                       css_class: temperature
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_gang
-                    - entity: sensor.climate_living_room
+                    - entity: sensor.thermometer_gang_luftfeuchtigkeit
                       css_class: humidity
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_gang
                 - name: Schlafzimmer
                   group:
-                    - entity: sensor.climate_bedroom
+                    - entity: sensor.thermometer_schlafzimmer_temperatur
                       css_class: room
                       name: Schlafzimmer
                       show_name: true
@@ -753,19 +730,19 @@ views:
                       css_class: window
                     - entity: climate.thermometer_schlafzimmer
                       css_class: thermostat
-                    - entity: sensor.climate_bedroom
+                    - entity: sensor.thermometer_schlafzimmer_temperatur
                       css_class: temperature
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_schlafzimmer
-                    - entity: sensor.climate_bedroom
+                    - entity: sensor.thermometer_schlafzimmer_luftfeuchtigkeit
                       css_class: humidity
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_schlafzimmer
                 - name: Büro
                   group:
-                    - entity: sensor.climate_office
+                    - entity: sensor.thermometer_buero_temperatur
                       css_class: room
                       name: Büro
                       show_name: true
@@ -776,19 +753,19 @@ views:
                       css_class: window
                     - entity: climate.thermometer_buero
                       css_class: thermostat
-                    - entity: sensor.climate_office
+                    - entity: sensor.thermometer_buero_temperatur
                       css_class: temperature
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_buero
-                    - entity: sensor.climate_office
+                    - entity: sensor.thermometer_buero_luftfeuchtigkeit
                       css_class: humidity
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_buero
                 - name: Bad
                   group:
-                    - entity: sensor.climate_bathroom
+                    - entity: sensor.thermometer_bad_temperatur
                       css_class: room
                       name: Bad
                       show_name: true
@@ -797,19 +774,19 @@ views:
                         entity: climate.thermometer_bad
                     - entity: climate.thermometer_bad
                       css_class: thermostat
-                    - entity: sensor.climate_bathroom
+                    - entity: sensor.thermometer_bad_temperatur
                       css_class: temperature
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_bad
-                    - entity: sensor.climate_bathroom
+                    - entity: sensor.thermometer_bad_luftfeuchtigkeit
                       css_class: humidity
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_bad
                 - name: WC
                   group:
-                    - entity: sensor.climate_shower
+                    - entity: sensor.thermometer_dusche_temperatur
                       css_class: room
                       name: WC
                       show_name: true
@@ -818,19 +795,19 @@ views:
                         entity: climate.thermometer_dusche
                     - entity: climate.thermometer_dusche
                       css_class: thermostat
-                    - entity: sensor.climate_shower
+                    - entity: sensor.thermometer_dusche_temperatur
                       css_class: temperature
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_dusche
-                    - entity: sensor.climate_shower
+                    - entity: sensor.thermometer_dusche_luftfeuchtigkeit
                       css_class: humidity
                       tap_action:
                         action: more-info
                         entity: climate.thermometer_dusche
                 - name: Balkon
                   group:
-                    - entity: sensor.climate_balcony
+                    - entity: sensor.vindstyrka_temperature
                       css_class: room
                       name: Balkon
                       show_name: true
@@ -839,12 +816,12 @@ views:
                         entity: sensor.vindstyrka_temperature
                     - entity: binary_sensor.balkon_tur
                       css_class: door
-                    - entity: sensor.climate_balcony
+                    - entity: sensor.vindstyrka_temperature
                       css_class: temperature
                       tap_action:
                         action: more-info
                         entity: sensor.vindstyrka_temperature
-                    - entity: sensor.climate_balcony
+                    - entity: sensor.vindstyrka_humidity
                       css_class: humidity
                       tap_action:
                         action: more-info
@@ -874,23 +851,29 @@ views:
                   main:
                     - icon: mdi:chevron-right
                   bottom:
-                    - entity: sensor.climate_living_room
+                    - entity: sensor.thermometer_gang_temperatur
                       icon: mdi:circle
                       origami_base:
-                        color: ${attr.color_code ?? "transparent"}
+                        color: >-
+                          ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                          [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                          [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                          [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                          .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                          (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                     - entity: binary_sensor.wohnzimmer_fenster
                       icon: mdi:window-closed-variant
                       origami_base:
                         icon:
                           'on': mdi:window-open-variant
-                    - entity: sensor.climate_living_room
+                    - entity: sensor.thermometer_gang_temperatur
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.temperature)}° |
-                    - entity: sensor.climate_living_room
+                        name: ${num(state, 0)}° |
+                    - entity: sensor.thermometer_gang_luftfeuchtigkeit
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.humidity, 0, '%')}
+                        name: ${num(state, 0, '%')}
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
@@ -912,23 +895,29 @@ views:
                   main:
                     - icon: mdi:chevron-right
                   bottom:
-                    - entity: sensor.climate_balcony
+                    - entity: sensor.vindstyrka_temperature
                       icon: mdi:circle
                       origami_base:
-                        color: ${attr.color_code ?? "transparent"}
+                        color: >-
+                          ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                          [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                          [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                          [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                          .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                          (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                     - entity: binary_sensor.balkon_tur
                       icon: mdi:door-closed
                       origami_base:
                         icon:
                           'on': mdi:door-open
-                    - entity: sensor.climate_balcony
+                    - entity: sensor.vindstyrka_temperature
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.temperature)}° |
-                    - entity: sensor.climate_balcony
+                        name: ${num(state, 0)}° |
+                    - entity: sensor.vindstyrka_humidity
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.humidity, 0, '%')}
+                        name: ${num(state, 0, '%')}
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
@@ -950,23 +939,29 @@ views:
                   main:
                     - icon: mdi:chevron-right
                   bottom:
-                    - entity: sensor.climate_bedroom
+                    - entity: sensor.thermometer_schlafzimmer_temperatur
                       icon: mdi:circle
                       origami_base:
-                        color: ${attr.color_code ?? "transparent"}
+                        color: >-
+                          ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                          [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                          [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                          [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                          .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                          (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                     - entity: binary_sensor.schlafzimmer_fenster
                       icon: mdi:window-closed-variant
                       origami_base:
                         icon:
                           'on': mdi:window-open-variant
-                    - entity: sensor.climate_bedroom
+                    - entity: sensor.thermometer_schlafzimmer_temperatur
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.temperature)}° |
-                    - entity: sensor.climate_bedroom
+                        name: ${num(state, 0)}° |
+                    - entity: sensor.thermometer_schlafzimmer_luftfeuchtigkeit
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.humidity, 0, '%')}
+                        name: ${num(state, 0, '%')}
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
@@ -988,23 +983,29 @@ views:
                   main:
                     - icon: mdi:chevron-right
                   bottom:
-                    - entity: sensor.climate_office
+                    - entity: sensor.thermometer_buero_temperatur
                       icon: mdi:circle
                       origami_base:
-                        color: ${attr.color_code ?? "transparent"}
+                        color: >-
+                          ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                          [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                          [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                          [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                          .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                          (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                     - entity: binary_sensor.buro_fenster
                       icon: mdi:window-closed-variant
                       origami_base:
                         icon:
                           'on': mdi:window-open-variant
-                    - entity: sensor.climate_office
+                    - entity: sensor.thermometer_buero_temperatur
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.temperature)}° |
-                    - entity: sensor.climate_office
+                        name: ${num(state, 0)}° |
+                    - entity: sensor.thermometer_buero_luftfeuchtigkeit
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.humidity, 0, '%')}
+                        name: ${num(state, 0, '%')}
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
@@ -1026,18 +1027,24 @@ views:
                   main:
                     - icon: mdi:chevron-right
                   bottom:
-                    - entity: sensor.climate_bathroom
+                    - entity: sensor.thermometer_bad_temperatur
                       icon: mdi:circle
                       origami_base:
-                        color: ${attr.color_code ?? "transparent"}
-                    - entity: sensor.climate_bathroom
+                        color: >-
+                          ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                          [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                          [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                          [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                          .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                          (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
+                    - entity: sensor.thermometer_bad_temperatur
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.temperature)}° |
-                    - entity: sensor.climate_bathroom
+                        name: ${num(state, 0)}° |
+                    - entity: sensor.thermometer_bad_luftfeuchtigkeit
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.humidity, 0, '%')}
+                        name: ${num(state, 0, '%')}
               - type: custom:bubble-card
                 card_type: button
                 button_type: name
@@ -1059,18 +1066,24 @@ views:
                   main:
                     - icon: mdi:chevron-right
                   bottom:
-                    - entity: sensor.climate_shower
+                    - entity: sensor.thermometer_dusche_temperatur
                       icon: mdi:circle
                       origami_base:
-                        color: ${attr.color_code ?? "transparent"}
-                    - entity: sensor.climate_shower
+                        color: >-
+                          ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                          [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                          [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                          [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                          .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                          (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
+                    - entity: sensor.thermometer_dusche_temperatur
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.temperature)}° |
-                    - entity: sensor.climate_shower
+                        name: ${num(state, 0)}° |
+                    - entity: sensor.thermometer_dusche_luftfeuchtigkeit
                       show_icon: false
                       origami_base:
-                        name: ${num(attr.humidity, 0, '%')}
+                        name: ${num(state, 0, '%')}
         theme: Origami
       - type: grid
         cards:
@@ -1081,8 +1094,7 @@ views:
                 icon_selected: mdi:speaker-play
                 selected_color: var(--state-media_player-active-color)
                 selected: >-
-                  [[[ return
-                  Number(states['sensor.active_speaker_count']?.state) > 0; ]]]
+                  [[[ return ['media_player.wohnzimmer', 'media_player.roam', 'media_player.eingang', 'media_player.buro'].some((id) => states[id]?.state === 'playing'); ]]]
                 tap_action:
                   action: navigate
                   navigation_path: '#popup_music'
@@ -1090,25 +1102,17 @@ views:
                   action: custom-js-action
                   code: |-
                     [[[
-                      // Holding the button plays or pauses the active speaker. Music Assistant
-                      // owns the queue when it delivers the cover, so it gets the command.
-                      // This only works for music, so the TV sound is never paused by accident.
-                      const active = states['sensor.active_speaker'];
-                      const target = active?.state;
-                      const chip = active?.attributes?.chip ?? '';
-                      if (!states[target] || !/^(playing|paused)_/.test(chip)) return;
-                      const ma = `${target}_mass`;
-                      const entity_id = chip.endsWith('_art') && states[ma] ? ma : target;
-                      hass.callService('media_player', 'media_play_pause', { entity_id });
+                      const speakers = ['media_player.wohnzimmer', 'media_player.roam', 'media_player.eingang', 'media_player.buro'];
+                      const find = (state) => speakers.find((id) => states[id]?.state === state && states[id].attributes.media_title);
+                      const speaker = find('playing') ?? find('paused');
+                      const leader = states[speaker]?.attributes?.group_members?.[0];
+                      if (speaker) hass.callService('media_player', 'media_play_pause', { entity_id: states[leader] ? leader : speaker });
                     ]]]
                 badge:
                   show: >-
-                    [[[ return
-                    Number(states['sensor.active_speaker_count']?.state) > 0;
-                    ]]]
+                    [[[ return ['media_player.wohnzimmer', 'media_player.roam', 'media_player.eingang', 'media_player.buro'].some((id) => states[id]?.state === 'playing'); ]]]
                   count: >-
-                    [[[ return states['sensor.active_speaker_count']?.state ??
-                    ''; ]]]
+                    [[[ return ['media_player.wohnzimmer', 'media_player.roam', 'media_player.eingang', 'media_player.buro'].filter((id) => states[id]?.state === 'playing').length; ]]]
               - label: TV
                 icon: mdi:remote-tv
                 selected_color: var(--state-media_player-active-color)
@@ -1126,81 +1130,15 @@ views:
                 icon_selected: mdi:lightbulb-on
                 selected_color: var(--state-light-active-color)
                 selected: >-
-                  [[[ return Number(states['sensor.lights_on_count']?.state) >
-                  0; ]]]
+                  [[[ return ['light.wohnzimmer_wohnen', 'light.schlafzimmer_raum', 'light.buro_raum', 'light.badezimmer_raum', 'light.balkon_raum', 'light.dusche_raum'].some((id) => states[id]?.state === 'on'); ]]]
                 tap_action:
                   action: navigate
                   navigation_path: '#popup_lights'
-                hold_action:
-                  action: open-popup
                 badge:
                   show: >-
-                    [[[ return Number(states['sensor.lights_on_count']?.state) >
-                    0; ]]]
+                    [[[ return ['light.wohnzimmer_wohnen', 'light.schlafzimmer_raum', 'light.buro_raum', 'light.badezimmer_raum', 'light.balkon_raum', 'light.dusche_raum'].some((id) => states[id]?.state === 'on'); ]]]
                   count: >-
-                    [[[ return states['sensor.lights_on_count']?.state ?? '';
-                    ]]]
-                popup:
-                  - label: >-
-                      [[[ return states['light.all_lights']?.state === 'on' ?
-                      'Turn off' : 'Turn on'; ]]]
-                    icon: >-
-                      [[[ return states['light.all_lights']?.state === 'on' ?
-                      'mdi:lightbulb-group-off-outline' :
-                      'mdi:lightbulb-group-outline'; ]]]
-                    tap_action:
-                      action: perform-action
-                      perform_action: script.lights_toggle
-                  - label: Evening
-                    icon: mdi:weather-sunset-down
-                    selected: >-
-                      [[[ return states['sensor.living_room_scene']?.state ===
-                      'evening'; ]]]
-                    tap_action:
-                      action: perform-action
-                      perform_action: scene.turn_on
-                      target:
-                        entity_id: scene.living_room_evening
-                  - label: Dinner
-                    icon: mdi:food-fork-drink
-                    selected: >-
-                      [[[ return states['sensor.living_room_scene']?.state ===
-                      'dinner'; ]]]
-                    tap_action:
-                      action: perform-action
-                      perform_action: scene.turn_on
-                      target:
-                        entity_id: scene.living_room_dinner
-                  - label: Movie
-                    icon: mdi:theater
-                    selected: >-
-                      [[[ return states['sensor.living_room_scene']?.state ===
-                      'movie'; ]]]
-                    tap_action:
-                      action: perform-action
-                      perform_action: scene.turn_on
-                      target:
-                        entity_id: scene.living_room_movie
-                  - label: Late
-                    icon: mdi:moon-waning-crescent
-                    selected: >-
-                      [[[ return states['sensor.living_room_scene']?.state ===
-                      'late'; ]]]
-                    tap_action:
-                      action: perform-action
-                      perform_action: scene.turn_on
-                      target:
-                        entity_id: scene.living_room_late
-                  - label: Night
-                    icon: mdi:weather-night
-                    selected: >-
-                      [[[ return states['sensor.living_room_scene']?.state ===
-                      'night'; ]]]
-                    tap_action:
-                      action: perform-action
-                      perform_action: scene.turn_on
-                      target:
-                        entity_id: scene.living_room_night
+                    [[[ return ['light.wohnzimmer_wohnen', 'light.schlafzimmer_raum', 'light.buro_raum', 'light.badezimmer_raum', 'light.balkon_raum', 'light.dusche_raum'].filter((id) => states[id]?.state === 'on').length; ]]]
               - label: Favoriten
                 icon: mdi:star
                 tap_action:
@@ -1223,28 +1161,29 @@ views:
               players:
                 - entity: |-
                     [[[
-                      // The Music Assistant twin when it delivers the cover (right artwork,
-                      // progress and skip), otherwise the speaker itself
-                      const active = states['sensor.active_speaker'];
-                      const target = states[active?.state] ? active.state : 'media_player.wohnzimmer';
-                      const ma = `${target}_mass`;
-                      return (active?.attributes?.chip ?? '').endsWith('_art') && states[ma] ? ma : target;
+                      const speakers = ['media_player.wohnzimmer', 'media_player.roam', 'media_player.eingang', 'media_player.buro'];
+                      const find = (state) => speakers.find((id) => states[id]?.state === state && states[id].attributes.media_title);
+                      const speaker = find('playing') ?? find('paused') ?? speakers[0];
+                      const leader = states[speaker]?.attributes?.group_members?.[0];
+                      return states[leader] ? leader : speaker;
                     ]]]
                   show: |-
                     [[[
-                      const active = states['sensor.active_speaker'];
-                      return !!active && !!states[active.state] && /^(playing|paused)_/.test(active.attributes?.chip ?? '');
+                      const speakers = ['media_player.wohnzimmer', 'media_player.roam', 'media_player.eingang', 'media_player.buro'];
+                      const find = (state) => speakers.find((id) => states[id]?.state === state && states[id].attributes.media_title);
+                      const speaker = find('playing') ?? find('paused');
+                      const grouped = (states[speaker]?.attributes?.group_members?.length ?? 0) > 1;
+                      document.documentElement.style.setProperty('--navbar-player-group', grouped ? '1' : '0');
+                      return !!speaker;
                     ]]]
-                  title: >-
-                    [[[ return
-                    (states['sensor.active_speaker']?.attributes?.title ??
-                    '').split(' | ')[0]; ]]]
                   subtitle: |-
                     [[[
-                      const a = states['sensor.active_speaker']?.attributes ?? {};
-                      // CSS cannot read entity states, so the group state is passed to the stylesheet as a variable
-                      document.documentElement.style.setProperty('--navbar-player-group', a.group === 'yes' ? '1' : '0');
-                      return a.speaker ?? '';
+                      const speakers = ['media_player.wohnzimmer', 'media_player.roam', 'media_player.eingang', 'media_player.buro'];
+                      const find = (state) => speakers.find((id) => states[id]?.state === state && states[id].attributes.media_title);
+                      const speaker = states[find('playing') ?? find('paused')];
+                      const others = (speaker?.attributes?.group_members?.length ?? 1) - 1;
+                      const leader = states[speaker?.attributes?.group_members?.[0]] ?? speaker;
+                      return (leader?.attributes?.friendly_name ?? '') + (others > 0 ? ' +' + others : '');
                     ]]]
                   tap_action:
                     action: navigate
@@ -1635,7 +1574,7 @@ views:
 
               /* The group badge on the cover is a tinted circle with a link
               icon in the media color.
-                 The subtitle template sets --navbar-player-group to 1 when the speaker is grouped and to 0 otherwise. */
+                 The show template sets --navbar-player-group to 1 when the speaker is grouped and to 0 otherwise. */
               .media-player {
                 --g-on: var(--navbar-player-group, 0);
                 --g-size: var(--icon-size-s);
@@ -2170,7 +2109,6 @@ views:
                         icon: mdi:lightbulb-multiple
                         modules:
                           - origami_base
-                          - origami_light
                         origami_base:
                           tile: true
                         scrolling_effect: false
@@ -2202,7 +2140,18 @@ views:
                         origami_button:
                           columns: 2
                           padding: var(--ha-space-1) 0 0 0
-                          active: '{{ states(''sensor.living_room_scene'') }}'
+                          active: >-
+                            {% if is_state('light.wohnzimmer_wohnen', 'on') %}
+                              {% set current_scene = states('select.wohnzimmer_wohnen_szene') | lower %}
+                              {% set mapping = [('nightlight', 'nacht'), ('read', 'lesen'), ('entspannen', 'entspannen'), ('ruhe', 'ruhe')] %}
+                              {% set ns = namespace(match=none) %}
+                              {% for pattern, result in mapping %}
+                                {% if ns.match is none and current_scene is search(pattern) %}
+                                  {% set ns.match = result %}
+                                {% endif %}
+                              {% endfor %}
+                              {{ ns.match if ns.match is not none else current_scene | slugify }}
+                            {% else %}none{% endif %}
                         sub_button:
                           main: []
                           bottom:
@@ -2250,11 +2199,16 @@ views:
                         card_type: separator
                         name: Beschattung
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_living_room",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_gang_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_gang_temperatur')))}
                         grid_options:
                           rows: auto
                       - type: custom:bubble-card
@@ -2308,21 +2262,33 @@ views:
                         card_type: separator
                         name: Klima
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_living_room",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_gang_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_gang_temperatur')))}
                         grid_options:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: sensor.climate_living_room
+                            - entity: sensor.thermometer_gang_temperatur
                               icon: mdi:circle
                               show_name: true
                               show_background: false
                               origami_header:
-                                name: ${attr.temperature}° / ${attr.humidity} %
+                                name: ${num(state, 1)}° / ${num(states('sensor.thermometer_gang_luftfeuchtigkeit'), 0, '%')}
+                                color: >-
+                                  ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                                  [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                                  [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                                  [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                                  .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                                  (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                               tap_action:
                                 action: more-info
                       - type: conditional
@@ -2556,11 +2522,16 @@ views:
                         card_type: separator
                         name: Beschattung
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_living_room",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_gang_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_gang_temperatur')))}
                         grid_options:
                           rows: auto
                       - type: custom:bubble-card
@@ -2640,7 +2611,6 @@ views:
                         icon: mdi:lightbulb-multiple
                         modules:
                           - origami_base
-                          - origami_light
                         origami_base:
                           tile: true
                         scrolling_effect: false
@@ -2673,7 +2643,12 @@ views:
                         origami_button:
                           columns: 2
                           padding: var(--ha-space-1) 0 0 0
-                          active: '{{ states(''sensor.balcony_scene'') }}'
+                          active: >-
+                            {% if is_state('light.balkon_raum', 'on') %}
+                              {% set current_scene = states('select.balkon_raum_szene') | lower %}
+                              {% set mapping = {'nachtlicht': 'nacht'} %}
+                              {{ mapping.get(current_scene, current_scene | slugify) }}
+                            {% else %}none{% endif %}
                         sub_button:
                           main: []
                           bottom:
@@ -2703,348 +2678,170 @@ views:
                         card_type: separator
                         name: Pflanzen
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_living_room",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_gang_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_gang_temperatur')))}
                         grid_options:
                           rows: auto
-                      - type: custom:paper-buttons-row
-                        extra_styles: >-
-                          .flex-box:active { transform:
-                          scale(var(--press-scale)) }
-                        styles:
-                          position: relative
-                          gap: var(--ha-space-3)
-                          padding: >-
-                            var(--ha-space-4) var(--ha-space-5)
-                            var(--ha-space-4) var(--ha-space-4)
-                          background-color: var(--ha-card-background)
-                          border-radius: var(--ha-card-border-radius)
-                          box-shadow: var(--ha-card-box-shadow)
-                        base_config:
-                          layout: name|state
-                          tooltip: false
-                          styles:
-                            button:
-                              flex-direction: column
-                              padding: 0px
-                            name:
-                              padding: 0px
-                              white-space: nowrap
-                              font-weight: var(--ha-font-weight-bold)
-                              line-height: var(--ha-line-height-normal)
-                            state:
-                              padding: 0px
-                              margin-top: var(--ha-space-1)
-                              white-space: nowrap
-                              font-size: var(--ha-font-size-s)
-                              font-weight: var(--ha-font-weight-bold)
-                              line-height: var(--ha-line-height-condensed)
-                              color: var(--secondary-text-color)
-                        buttons:
-                          - layout: name
-                            name: " "
-                            tap_action:
-                              action: more-info
-                              entity: plant.zitrone
-                            styles:
-                              button:
-                                position: absolute
-                                inset: 0px
-                          - layout: icon
-                            icon: mdi:check-bold
-                            state: >-
-                              {%- set st = states('plant.zitrone') -%} {%- set
-                              prob = state_attr('plant.zitrone', 'problem') |
-                              string -%} {%- if st == 'problem' -%}
-                                {%- if 'temperature' in prob or 'moisture low' in prob -%}crit
-                                {%- else -%}warn
-                                {%- endif -%}
-                              {%- else -%}ok {%- endif -%}
-                            state_icons:
-                              warn: mdi:exclamation-thick
-                              crit: mdi:close-thick
-                            state_styles:
-                              warn:
-                                button:
-                                  color: var(--warning-color)
-                              crit:
-                                button:
-                                  color: var(--error-color)
-                            tap_action:
-                              action: none
-                            styles:
-                              button:
-                                color: var(--success-color)
-                                pointer-events: none
-                              icon:
-                                display: flex
-                                align-items: center
-                                justify-content: center
-                                width: var(--control-height-icon)
-                                height: var(--control-height-icon)
-                                border-radius: >-
-                                  var(--org-tile-radius, var(--radius-inner))
-                                  !important
-                                background-color: currentColor
-                                box-shadow: >-
-                                  0 0 0 5px color-mix(in srgb, currentColor 12%,
-                                  transparent)
-                                --mdc-icon-size: var(--icon-size-xs)
-                                --icon-primary-color: var(--text-color-active)
-                          - name: >-
-                              {{ state_attr('plant.zitrone', 'friendly_name') if
-                              state_attr('plant.zitrone', 'friendly_name') is
-                              not none else 'Zitronenbaum' }}
-                            state: >-
-                              {%- set st = states('plant.zitrone') -%} {%- set
-                              prob = state_attr('plant.zitrone', 'problem') |
-                              string -%} {%- if st == 'problem' -%}
-                                {%- if 'moisture low' in prob -%}Gießen nötig!
-                                {%- elif 'moisture high' in prob -%}Erde zu nass!
-                                {%- elif 'conductivity low' in prob -%}Düngen nötig!
-                                {%- elif 'conductivity high' in prob -%}Zu viel Dünger!
-                                {%- elif 'temperature low' in prob -%}Kälte-Warnung!
-                                {%- elif 'temperature high' in prob -%}Hitze-Warnung!
-                                {%- elif 'battery' in prob -%}Batterie leer!
-                                {%- else -%}Handlungsbedarf!
-                                {%- endif -%}
-                              {%- else -%}
-                                Alles optimal
-                              {%- endif -%}
-                            tap_action:
-                              action: none
-                            styles:
-                              button:
-                                flex: 1
-                                min-width: 0px
-                                align-items: flex-start
-                                pointer-events: none
-                              name:
-                                max-width: 100%
-                                overflow: hidden
-                                text-overflow: ellipsis
-                                font-size: var(--ha-font-size-l)
-                              state:
-                                max-width: 100%
-                                overflow: hidden
-                                text-overflow: ellipsis
-                          - name: >-
-                              {%- set m = state_attr('plant.zitrone',
-                              'moisture') | float(none) -%} {{ (m | round(0) |
-                              int ~ ' %') if m is not none else '–' }}
-                            state: Boden
-                            tap_action:
-                              action: more-info
-                              entity: plant.zitrone
-                            styles:
-                              button:
-                                min-width: 44px
-                                align-items: flex-end
-                              name:
-                                font-size: var(--ha-font-size-m)
-                                font-variant-numeric: tabular-nums
-                                color: >-
-                                  {%- set prob = state_attr('plant.zitrone',
-                                  'problem') | string -%} {{
-                                  'var(--error-color)' if 'moisture low' in prob
-                                  else ('var(--warning-color)' if 'moisture
-                                  high' in prob else
-                                  'var(--primary-text-color)') }}
-                              state:
-                                font-weight: normal
-                          - name: >-
-                              {%- set c = state_attr('plant.zitrone',
-                              'conductivity') | float(none) -%} {{ (c | round(0)
-                              | int) if c is not none else '–' }}
-                            state: µS/cm
-                            tap_action:
-                              action: more-info
-                              entity: plant.zitrone
-                            styles:
-                              button:
-                                min-width: 44px
-                                align-items: flex-end
-                              name:
-                                font-size: var(--ha-font-size-m)
-                                font-variant-numeric: tabular-nums
-                                color: >-
-                                  {%- set prob = state_attr('plant.zitrone',
-                                  'problem') | string -%} {{
-                                  'var(--warning-color)' if 'conductivity' in
-                                  prob else 'var(--primary-text-color)' }}
-                              state:
-                                font-weight: normal
+                      - type: custom:bubble-card
+                        card_type: button
+                        button_type: state
+                        entity: plant.zitrone
+                        name: >-
+                          {{ state_attr('plant.zitrone', 'friendly_name')
+                             if state_attr('plant.zitrone', 'friendly_name') is not none else 'Zitronenbaum' }}
+                        icon: >-
+                          {%- set prob = state_attr('plant.zitrone', 'problem') | string -%}
+                          {%- if states('plant.zitrone') in ['unknown', 'unavailable'] -%}mdi:help
+                          {%- elif states('plant.zitrone') == 'problem' -%}
+                            {{ 'mdi:close-thick' if 'temperature' in prob or 'moisture low' in prob else 'mdi:exclamation-thick' }}
+                          {%- else -%}mdi:check-bold{%- endif -%}
+                        state_content: >-
+                          {%- set prob = state_attr('plant.zitrone', 'problem') | string -%}
+                          {%- if states('plant.zitrone') in ['unknown', 'unavailable'] -%}Nicht verfügbar
+                          {%- elif states('plant.zitrone') == 'problem' -%}
+                            {%- if 'moisture low' in prob -%}Gießen nötig!
+                            {%- elif 'moisture high' in prob -%}Erde zu nass!
+                            {%- elif 'conductivity low' in prob -%}Düngen nötig!
+                            {%- elif 'conductivity high' in prob -%}Zu viel Dünger!
+                            {%- elif 'temperature low' in prob -%}Kälte-Warnung!
+                            {%- elif 'temperature high' in prob -%}Hitze-Warnung!
+                            {%- elif 'battery' in prob -%}Batterie leer!
+                            {%- else -%}Handlungsbedarf!
+                            {%- endif -%}
+                          {%- else -%}Alles optimal{%- endif -%}
+                        modules:
+                          - origami_base
+                        tap_action:
+                          action: more-info
+                        button_action:
+                          tap_action:
+                            action: more-info
+                        sub_button:
+                          main:
+                            - entity: plant.zitrone
+                              show_icon: false
+                              origami_base:
+                                name: "${num(attr.moisture, 0, '%') || '–'}"
+                                label: Boden
+                                name_color: >-
+                                  ${String(attr.problem ?? '').includes('moisture low') ? 'var(--error-color)' :
+                                  String(attr.problem ?? '').includes('moisture high') ? 'var(--warning-color)' : ''}
+                              tap_action:
+                                action: more-info
+                            - entity: plant.zitrone
+                              show_icon: false
+                              origami_base:
+                                name: "${num(attr.conductivity, 0) || '–'}"
+                                label: µS/cm
+                                name_color: "${String(attr.problem ?? '').includes('conductivity') ? 'var(--warning-color)' : ''}"
+                              tap_action:
+                                action: more-info
+                        styles: |-
+                          ha-card .bubble-icon-container .bubble-icon {
+                            color: ${(s => !s || ['unknown', 'unavailable'].includes(s.state)
+                              ? 'var(--secondary-text-color)' : s.state === 'problem'
+                              ? /temperature|moisture low/.test(String(s.attributes?.problem ?? ''))
+                                ? 'var(--error-color)' : 'var(--warning-color)' : 'var(--success-color)')
+                              (hass.states['plant.zitrone'])} !important;
+                            --icon-primary-color: currentColor;
+                          }
                   - type: vertical-stack
                     cards:
                       - type: custom:bubble-card
                         card_type: separator
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_living_room",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_gang_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_gang_temperatur')))}
                         grid_options:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: sensor.climate_balcony
+                            - entity: sensor.vindstyrka_temperature
                               icon: mdi:circle
                               show_name: true
                               show_background: false
                               origami_header:
-                                name: ${attr.temperature}° / ${attr.humidity} %
+                                name: ${num(state, 1)}° / ${num(states('sensor.vindstyrka_humidity'), 0, '%')}
+                                color: >-
+                                  ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                                  [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                                  [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                                  [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                                  .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                                  (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                               tap_action:
                                 action: more-info
                         name: Luftqualität
-                      - type: custom:paper-buttons-row
-                        extra_styles: >-
-                          .flex-box:active { transform:
-                          scale(var(--press-scale)) }
-                        styles:
-                          position: relative
-                          gap: var(--ha-space-3)
-                          padding: >-
-                            var(--ha-space-4) var(--ha-space-5)
-                            var(--ha-space-4) var(--ha-space-4)
-                          background-color: var(--ha-card-background)
-                          border-radius: var(--ha-card-border-radius)
-                          box-shadow: var(--ha-card-box-shadow)
-                        base_config:
-                          layout: name|state
-                          tooltip: false
-                          styles:
-                            button:
-                              flex-direction: column
-                              padding: 0px
-                            name:
-                              padding: 0px
-                              white-space: nowrap
-                              font-weight: var(--ha-font-weight-bold)
-                              line-height: var(--ha-line-height-normal)
-                            state:
-                              padding: 0px
-                              margin-top: var(--ha-space-1)
-                              white-space: nowrap
-                              font-size: 12px
-                              font-weight: var(--ha-font-weight-medium)
-                              line-height: var(--ha-line-height-condensed)
-                              color: var(--secondary-text-color)
-                        buttons:
-                          - layout: name
-                            name: " "
-                            tap_action:
-                              action: more-info
-                              entity: sensor.vindstyrka_balkon
-                            styles:
-                              button:
-                                position: absolute
-                                inset: 0px
-                          - layout: icon
-                            icon: mdi:check-bold
-                            state: >-
-                              {%- set pm = states('sensor.vindstyrka_balkon') |
-                              float(0) -%} {%- if pm > 35 -%}crit {%- elif pm >
-                              12 -%}warn {%- else -%}ok {%- endif -%}
-                            state_icons:
-                              warn: mdi:exclamation-thick
-                              crit: mdi:close-thick
-                            state_styles:
-                              warn:
-                                button:
-                                  color: var(--warning-color)
-                              crit:
-                                button:
-                                  color: var(--error-color)
-                            tap_action:
-                              action: none
-                            styles:
-                              button:
-                                color: var(--success-color)
-                                pointer-events: none
-                              icon:
-                                display: flex
-                                align-items: center
-                                justify-content: center
-                                width: var(--control-height-icon)
-                                height: var(--control-height-icon)
-                                border-radius: var(--radius-inner)
-                                background-color: currentColor
-                                box-shadow: >-
-                                  0 0 0 5px color-mix(in srgb, currentColor 12%,
-                                  transparent)
-                                --mdc-icon-size: var(--icon-size-xs)
-                                --icon-primary-color: var(--text-color-active)
-                          - name: >-
-                              {%- set pm = states('sensor.vindstyrka_balkon') |
-                              float(0) -%} {%- if pm > 35 -%}Schlechte Luft {%-
-                              elif pm > 12 -%}Mäßige Luft {%- else -%}Gute Luft
-                              {%- endif -%}
-                            state: >-
-                              {{ state_attr('sensor.vindstyrka_balkon',
-                              'friendly_name') }}
-                            tap_action:
-                              action: none
-                            styles:
-                              button:
-                                flex: 1
-                                min-width: 0px
-                                align-items: flex-start
-                                pointer-events: none
-                              name:
-                                max-width: 100%
-                                overflow: hidden
-                                text-overflow: ellipsis
-                                font-size: var(--ha-font-size-l)
-                              state:
-                                max-width: 100%
-                                overflow: hidden
-                                text-overflow: ellipsis
-                          - name: >-
-                              {%- set v = states('sensor.vindstyrka_balkon') |
-                              float(none) -%} {{ (v | round(0) | int) if v is
-                              not none else '–' }}
-                            state: PM2.5
-                            tap_action:
-                              action: more-info
-                              entity: sensor.vindstyrka_balkon
-                            styles:
-                              button:
-                                min-width: 44px
-                                align-items: flex-end
-                              name:
-                                font-size: var(--ha-font-size-m)
-                                font-variant-numeric: tabular-nums
-                                color: >-
-                                  {%- set v = states('sensor.vindstyrka_balkon')
-                                  | float(0) -%} {{ 'var(--error-color)' if v >
-                                  35 else ('var(--warning-color)' if v > 12 else
-                                  'var(--primary-text-color)') }}
-                          - name: >-
-                              {%- set v = state_attr('sensor.vindstyrka_balkon',
-                              'voc_index') | float(none) -%} {{ (v | round(0) |
-                              int) if v is not none else '–' }}
-                            state: VOC
-                            tap_action:
-                              action: more-info
-                              entity: sensor.vindstyrka_balkon
-                            styles:
-                              button:
-                                min-width: 44px
-                                align-items: flex-end
-                              name:
-                                font-size: var(--ha-font-size-m)
-                                font-variant-numeric: tabular-nums
-                                color: >-
-                                  {%- set v =
-                                  state_attr('sensor.vindstyrka_balkon',
-                                  'voc_index') | float(0) -%} {{
-                                  'var(--error-color)' if v > 300 else
-                                  ('var(--warning-color)' if v > 150 else
-                                  'var(--primary-text-color)') }}
+                      - type: custom:bubble-card
+                        card_type: button
+                        button_type: state
+                        entity: sensor.vindstyrka_balkon
+                        name: >-
+                          {%- set pm = states('sensor.vindstyrka_balkon') | float(none) -%}
+                          {%- if pm is none -%}Nicht verfügbar
+                          {%- elif pm > 35 -%}Schlechte Luft
+                          {%- elif pm > 12 -%}Mäßige Luft
+                          {%- else -%}Gute Luft{%- endif -%}
+                        icon: >-
+                          {%- set pm = states('sensor.vindstyrka_balkon') | float(none) -%}
+                          {%- if pm is none -%}mdi:help
+                          {%- elif pm > 35 -%}mdi:close-thick
+                          {%- elif pm > 12 -%}mdi:exclamation-thick
+                          {%- else -%}mdi:check-bold{%- endif -%}
+                        state_content: >-
+                          {{ state_attr('sensor.vindstyrka_balkon', 'friendly_name') }}
+                        modules:
+                          - origami_base
+                        tap_action:
+                          action: more-info
+                        button_action:
+                          tap_action:
+                            action: more-info
+                        sub_button:
+                          main:
+                            - entity: sensor.vindstyrka_balkon
+                              show_icon: false
+                              origami_base:
+                                name: "${num(state, 0) || '–'}"
+                                label: PM2.5
+                                name_color: >-
+                                  ${parseFloat(state) > 35 ? 'var(--error-color)' :
+                                  parseFloat(state) > 12 ? 'var(--warning-color)' : ''}
+                              tap_action:
+                                action: more-info
+                            - entity: sensor.vindstyrka_balkon
+                              show_icon: false
+                              origami_base:
+                                name: "${num(attr.voc_index, 0) || '–'}"
+                                label: VOC
+                                name_color: >-
+                                  ${parseFloat(attr.voc_index) > 300 ? 'var(--error-color)' :
+                                  parseFloat(attr.voc_index) > 150 ? 'var(--warning-color)' : ''}
+                              tap_action:
+                                action: more-info
+                        styles: |-
+                          ha-card .bubble-icon-container .bubble-icon {
+                            color: ${(v => !Number.isFinite(v) ? 'var(--secondary-text-color)' :
+                              v > 35 ? 'var(--error-color)' : v > 12 ? 'var(--warning-color)' :
+                              'var(--success-color)')(parseFloat(hass.states['sensor.vindstyrka_balkon']?.state))} !important;
+                            --icon-primary-color: currentColor;
+                          }
             popup_mode: default
           - type: custom:bubble-card
             card_type: pop-up
@@ -3105,7 +2902,6 @@ views:
                         icon: mdi:lightbulb-multiple
                         modules:
                           - origami_base
-                          - origami_light
                         origami_base:
                           tile: true
                         scrolling_effect: false
@@ -3137,7 +2933,12 @@ views:
                         origami_button:
                           columns: 2
                           padding: var(--ha-space-1) 0 0 0
-                          active: '{{ states(''sensor.bedroom_scene'') }}'
+                          active: >-
+                            {% if is_state('light.schlafzimmer_raum', 'on') %}
+                              {% set current_scene = states('select.schlafzimmer_raum_szene') | lower %}
+                              {% set mapping = {'dark': 'nacht', 'chillo mode': 'gemütlich'} %}
+                              {{ mapping.get(current_scene, current_scene | slugify) }}
+                            {% else %}none{% endif %}
                         sub_button:
                           main: []
                           bottom:
@@ -3165,11 +2966,16 @@ views:
                         card_type: separator
                         name: Beschattung
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_living_room",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_gang_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_gang_temperatur')))}
                         grid_options:
                           rows: auto
                       - type: custom:bubble-card
@@ -3223,21 +3029,33 @@ views:
                         card_type: separator
                         name: Klima
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_bedroom",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_schlafzimmer_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_schlafzimmer_temperatur')))}
                         grid_options:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: sensor.climate_bedroom
+                            - entity: sensor.thermometer_schlafzimmer_temperatur
                               icon: mdi:circle
                               show_name: true
                               show_background: false
                               origami_header:
-                                name: ${attr.temperature}° / ${attr.humidity} %
+                                name: ${num(state, 1)}° / ${num(states('sensor.thermometer_schlafzimmer_luftfeuchtigkeit'), 0, '%')}
+                                color: >-
+                                  ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                                  [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                                  [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                                  [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                                  .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                                  (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                               tap_action:
                                 action: more-info
                       - type: custom:bubble-card
@@ -3514,7 +3332,6 @@ views:
                         icon: mdi:lightbulb-multiple
                         modules:
                           - origami_base
-                          - origami_light
                         origami_base:
                           tile: true
                         scrolling_effect: false
@@ -3546,7 +3363,12 @@ views:
                         origami_button:
                           columns: 2
                           padding: var(--ha-space-1) 0 0 0
-                          active: '{{ states(''sensor.office_scene'') }}'
+                          active: >-
+                            {% if is_state('light.buro_raum', 'on') %}
+                              {% set current_scene = states('select.buro_raum_szene') | lower %}
+                              {% set mapping = {'fuchsia frost': 'mood'} %}
+                              {{ mapping.get(current_scene, current_scene | slugify) }}
+                            {% else %}none{% endif %}
                         sub_button:
                           main: []
                           bottom:
@@ -3574,11 +3396,16 @@ views:
                         card_type: separator
                         name: Beschattung
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_living_room",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_gang_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_gang_temperatur')))}
                         grid_options:
                           rows: auto
                       - type: custom:bubble-card
@@ -3632,21 +3459,33 @@ views:
                         card_type: separator
                         name: Klima
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_office", "color_code")
-                            }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_buero_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_buero_temperatur')))}
                         grid_options:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: sensor.climate_office
+                            - entity: sensor.thermometer_buero_temperatur
                               icon: mdi:circle
                               show_name: true
                               show_background: false
                               origami_header:
-                                name: ${attr.temperature}° / ${attr.humidity} %
+                                name: ${num(state, 1)}° / ${num(states('sensor.thermometer_buero_luftfeuchtigkeit'), 0, '%')}
+                                color: >-
+                                  ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                                  [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                                  [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                                  [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                                  .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                                  (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                               tap_action:
                                 action: more-info
                       - type: custom:bubble-card
@@ -3756,7 +3595,6 @@ views:
                         icon: mdi:lightbulb-multiple
                         modules:
                           - origami_base
-                          - origami_light
                         origami_base:
                           tile: true
                         scrolling_effect: false
@@ -3789,7 +3627,12 @@ views:
                           muted: false
                           columns: 2
                           padding: var(--ha-space-1) 0 0 0
-                          active: '{{ states(''sensor.bathroom_scene'') }}'
+                          active: >-
+                            {% if is_state('light.badezimmer_raum', 'on') %}
+                              {% set current_scene = states('select.badezimmer_raum_szene') | lower %}
+                              {% set mapping = {'ruhe': 'gemütlich'} %}
+                              {{ mapping.get(current_scene, current_scene | slugify) }}
+                            {% else %}none{% endif %}
                         sub_button:
                           main: []
                           bottom:
@@ -3817,21 +3660,33 @@ views:
                         card_type: separator
                         name: Klima
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_bathroom",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_bad_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_bad_temperatur')))}
                         grid_options:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: sensor.climate_bathroom
+                            - entity: sensor.thermometer_bad_temperatur
                               icon: mdi:circle
                               show_name: true
                               show_background: false
                               origami_header:
-                                name: ${attr.temperature}° / ${attr.humidity} %
+                                name: ${num(state, 1)}° / ${num(states('sensor.thermometer_bad_luftfeuchtigkeit'), 0, '%')}
+                                color: >-
+                                  ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                                  [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                                  [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                                  [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                                  .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                                  (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                               tap_action:
                                 action: more-info
                       - type: custom:bubble-card
@@ -3941,7 +3796,6 @@ views:
                         icon: mdi:lightbulb-multiple
                         modules:
                           - origami_base
-                          - origami_light
                         origami_base:
                           tile: true
                         scrolling_effect: false
@@ -3973,7 +3827,12 @@ views:
                         origami_button:
                           columns: 2
                           padding: var(--ha-space-1) 0 0 0
-                          active: '{{ states(''sensor.shower_scene'') }}'
+                          active: >-
+                            {% if is_state('light.dusche_raum', 'on') %}
+                              {% set current_scene = states('select.dusche_raum_szene') | lower %}
+                              {% set mapping = {'ruhe': 'gemütlich'} %}
+                              {{ mapping.get(current_scene, current_scene | slugify) }}
+                            {% else %}none{% endif %}
                         sub_button:
                           main: []
                           bottom:
@@ -4001,21 +3860,33 @@ views:
                         card_type: separator
                         name: Klima
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_shower", "color_code")
-                            }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_dusche_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_dusche_temperatur')))}
                         grid_options:
                           rows: auto
                         sub_button:
                           main:
-                            - entity: sensor.climate_shower
+                            - entity: sensor.thermometer_dusche_temperatur
                               icon: mdi:circle
                               show_name: true
                               show_background: false
                               origami_header:
-                                name: ${attr.temperature}° / ${attr.humidity} %
+                                name: ${num(state, 1)}° / ${num(states('sensor.thermometer_dusche_luftfeuchtigkeit'), 0, '%')}
+                                color: >-
+                                  ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                                  [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                                  [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                                  [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                                  .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                                  (hass.config.unit_system.temperature === '°F' ? (state - 32) / 1.8 : parseFloat(state))}
                               tap_action:
                                 action: more-info
                       - type: custom:bubble-card
@@ -4613,11 +4484,16 @@ views:
                         card_type: separator
                         name: Opener
                         modules:
+                          - origami_base
                           - origami_header
                         origami_header:
                           icon_color: >-
-                            {{ state_attr("sensor.climate_living_room",
-                            "color_code") }}
+                            ${(t => [[12, '#728FA8B3'], [15, '#7C97A9B3'], [17, '#8BA2A8B3'], [18.5, '#9AAEA3B3'],
+                            [22, '#88A37EB3'], [24, '#99A677B3'], [25, '#AEA76FB3'], [26, '#BB9F68B3'],
+                            [27, '#C0935FB3'], [28, '#BF8A5FB3'], [29, '#BB7E5DB3'], [30.5, '#B3735CB3'],
+                            [32, '#AA6A5AB3'], [Infinity, '#9C6056B3']]
+                            .find(([top]) => t <= top)?.[1] ?? 'transparent')
+                            (hass.config.unit_system.temperature === '°F' ? (parseFloat(states('sensor.thermometer_gang_temperatur')) - 32) / 1.8 : parseFloat(states('sensor.thermometer_gang_temperatur')))}
                         grid_options:
                           rows: auto
                       - type: custom:bubble-card
@@ -5930,7 +5806,6 @@ views:
                     icon: mdi:lightbulb-multiple
                     modules:
                       - origami_base
-                      - origami_light
                     origami_base:
                       tile: true
                     scrolling_effect: false
@@ -5962,7 +5837,18 @@ views:
                     origami_button:
                       columns: 2
                       padding: var(--ha-space-1) 0 0 0
-                      active: '{{ states(''sensor.living_room_scene'') }}'
+                      active: >-
+                        {% if is_state('light.wohnzimmer_wohnen', 'on') %}
+                          {% set current_scene = states('select.wohnzimmer_wohnen_szene') | lower %}
+                          {% set mapping = [('nightlight', 'nacht'), ('read', 'lesen'), ('entspannen', 'entspannen'), ('ruhe', 'ruhe')] %}
+                          {% set ns = namespace(match=none) %}
+                          {% for pattern, result in mapping %}
+                            {% if ns.match is none and current_scene is search(pattern) %}
+                              {% set ns.match = result %}
+                            {% endif %}
+                          {% endfor %}
+                          {{ ns.match if ns.match is not none else current_scene | slugify }}
+                        {% else %}none{% endif %}
                     sub_button:
                       main: []
                       bottom:
@@ -6012,7 +5898,6 @@ views:
                     icon: mdi:lightbulb-multiple
                     modules:
                       - origami_base
-                      - origami_light
                     origami_base:
                       tile: true
                     scrolling_effect: false
@@ -6044,7 +5929,12 @@ views:
                     origami_button:
                       columns: 2
                       padding: var(--ha-space-1) 0 0 0
-                      active: '{{ states(''sensor.office_scene'') }}'
+                      active: >-
+                        {% if is_state('light.buro_raum', 'on') %}
+                          {% set current_scene = states('select.buro_raum_szene') | lower %}
+                          {% set mapping = {'fuchsia frost': 'mood'} %}
+                          {{ mapping.get(current_scene, current_scene | slugify) }}
+                        {% else %}none{% endif %}
                     sub_button:
                       main: []
                       bottom:
@@ -7090,100 +6980,69 @@ views:
               - condition: screen
                 media_query: ''
             cards:
-              - type: custom:paper-buttons-row
-                extra_styles: 'paper-button:active { transform: scale(.96) }'
-                styles:
-                  display: grid
-                  grid-template-columns: repeat(24, minmax(0, 1fr))
-                  gap: 0px
-                  padding: var(--ha-space-8, 32px)
-                  background-color: var(--fill-subtle)
-                  border-radius: var(--ha-card-border-radius)
-                  box-shadow: none
-                base_config:
-                  entity: sensor.climate_home
-                  tap_action:
-                    action: more-info
-                  styles:
-                    button:
-                      grid-column: span 8
-                      height: 84px
-                      padding: 0px 6px
-                      background: transparent
-                      box-shadow: none
-                      border-radius: 0px
-                      justify-content: center
-                      align-items: center
-                    icon:
-                      --mdc-icon-size: 27px
-                      margin-right: 0px
-                      opacity: 1
-                    name:
-                      padding: 0px
-                      margin-top: 9px
-                      font-size: 13px
-                      font-weight: 600
-                      opacity: 0.5
-                    state:
-                      padding: 0px
-                      margin-top: 6px
-                      font-size: 20px
-                      font-weight: 700
-                      color: var(--primary-text-color)
-                buttons:
-                  - entity: zone.home
-                    layout: icon_name_state
-                    icon: mdi:account-group-outline
-                    name: Home
-                    state:
-                      postfix: ' Personen'
-                    state_styles:
-                      '0':
-                        icon:
-                          color: var(--secondary-text-color)
-                    styles:
-                      button:
-                        border-right: 2px solid var(--fill-strong)
-                      icon:
-                        color: var(--success-color)
-                  - layout: icon_name_state
-                    icon: mdi:lock-outline
-                    name: Tür
-                    state:
-                      attribute: front_door_open
-                    state_text:
-                      'off': Geschlossen
-                      'on': Offen
-                    state_icons:
-                      'on': mdi:lock-open-variant-outline
-                    state_styles:
-                      'on':
-                        icon:
-                          color: var(--error-color)
-                          opacity: 1
-                    tap_action:
-                      action: more-info
-                      entity: lock.nuki_eingang_lock
-                    styles:
-                      button:
-                        border-right: 2px solid var(--fill-strong)
-                      icon:
-                        color: var(--success-color)
-                  - entity: sensor.windows_open_count
-                    layout: icon_name_state
-                    icon: mdi:window-open-variant
-                    name: Fenster
-                    state:
-                      postfix: ' offen'
-                    state_icons:
-                      '0': mdi:window-closed-variant
-                    state_styles:
-                      '0':
-                        icon:
-                          color: var(--secondary-text-color)
-                    styles:
-                      icon:
-                        color: var(--primary-text-color)
+              - type: custom:bubble-card
+                card_type: sub-buttons
+                modules:
+                  - origami_base
+                  - origami_button
+                origami_button:
+                  columns: 3
+                  background: false
+                  icon_size: 27px
+                  padding: var(--ha-space-5)
+                sub_button:
+                  main: []
+                  bottom:
+                    - entity: zone.home
+                      name: Home
+                      icon: mdi:account-group-outline
+                      show_name: true
+                      content_layout: icon-top
+                      origami_button:
+                        name: "${num(state, 0) || '–'} Personen"
+                        label: Home
+                        color: "${Number(state) === 0 ? 'var(--secondary-text-color)' : 'var(--success-color)'}"
+                      tap_action:
+                        action: more-info
+                    - entity: binary_sensor.wohnzimmer_nuki_eingang_door_open
+                      name: Tür
+                      icon: mdi:lock-outline
+                      show_name: true
+                      content_layout: icon-top
+                      origami_button:
+                        name: "${state === 'on' ? 'Offen' : state === 'off' ? 'Geschlossen' : '–'}"
+                        icon: "${state === 'on' ? 'mdi:lock-open-variant-outline' : ''}"
+                        label: Tür
+                        color: "${state === 'on' ? 'var(--error-color)' : state === 'off' ? 'var(--success-color)' : 'var(--secondary-text-color)'}"
+                      tap_action:
+                        action: more-info
+                        entity: lock.nuki_eingang_lock
+                    - name: Fenster
+                      icon: mdi:window-open-variant
+                      show_name: true
+                      content_layout: icon-top
+                      origami_button:
+                        name: >-
+                          ${['binary_sensor.buro_fenster', 'binary_sensor.schlafzimmer_fenster',
+                          'binary_sensor.wohnzimmer_fenster'].filter(id => states(id) === 'on').length} offen
+                        icon: >-
+                          ${['binary_sensor.buro_fenster', 'binary_sensor.schlafzimmer_fenster',
+                          'binary_sensor.wohnzimmer_fenster'].some(id => states(id) === 'on') ? '' : 'mdi:window-closed-variant'}
+                        label: Fenster
+                        color: >-
+                          ${['binary_sensor.buro_fenster', 'binary_sensor.schlafzimmer_fenster',
+                          'binary_sensor.wohnzimmer_fenster'].some(id => states(id) === 'on')
+                          ? 'var(--primary-text-color)' : 'var(--secondary-text-color)'}
+                      tap_action:
+                        action: perform-action
+                        perform_action: input_boolean.toggle
+                        target:
+                          entity_id: input_boolean.room_climate_card
+                styles: |-
+                  ha-card {
+                    background: var(--fill-subtle);
+                    border-radius: var(--ha-card-border-radius);
+                  }
         column_span: 1
         theme: Origami
     theme: Origami
