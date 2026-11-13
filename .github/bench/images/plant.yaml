@@ -1,0 +1,21 @@
+# A healthy plant by day and a plant that needs water at night.
+kind: panel
+cards:
+  - file: plant/card.yaml
+states:
+  plant.houseplant:
+    state: ok
+    attributes: {friendly_name: Houseplant, problem: '', moisture: 46, conductivity: 425}
+templates:
+  - {match: "state_attr('plant.houseplant', 'friendly_name')", result: Houseplant}
+  - {match: "mdi:close-thick' if 'temperature'", result: 'mdi:check-bold'}
+  - {match: "moisture low' in prob -%}Needs water", result: All good}
+dark:
+  states:
+    plant.houseplant:
+      state: problem
+      attributes: {friendly_name: Houseplant, problem: moisture low, moisture: 17, conductivity: 310}
+  templates:
+    - {match: "state_attr('plant.houseplant', 'friendly_name')", result: Houseplant}
+    - {match: "mdi:close-thick' if 'temperature'", result: 'mdi:close-thick'}
+    - {match: "moisture low' in prob -%}Needs water", result: Needs water}

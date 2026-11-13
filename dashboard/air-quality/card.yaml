@@ -1,0 +1,54 @@
+type: custom:bubble-card
+card_type: button
+button_type: state
+entity: sensor.living_room_pm25
+name: >-
+  {%- set pm = states('sensor.living_room_pm25') | float(none) -%}
+  {%- if pm is none -%}Unavailable
+  {%- elif pm > 35 -%}Poor air
+  {%- elif pm > 12 -%}Moderate air
+  {%- else -%}Good air{%- endif -%}
+icon: >-
+  {%- set pm = states('sensor.living_room_pm25') | float(none) -%}
+  {%- if pm is none -%}mdi:help
+  {%- elif pm > 35 -%}mdi:close-thick
+  {%- elif pm > 12 -%}mdi:exclamation-thick
+  {%- else -%}mdi:check-bold{%- endif -%}
+state_content: >-
+  {{ state_attr('sensor.living_room_pm25', 'friendly_name') }}
+modules:
+  - origami_base
+tap_action:
+  action: more-info
+button_action:
+  tap_action:
+    action: more-info
+sub_button:
+  main:
+    - entity: sensor.living_room_pm25
+      show_icon: false
+      origami_base:
+        name: "${num(state, 0) || '–'}"
+        label: PM2.5
+        name_color: >-
+          ${parseFloat(state) > 35 ? 'var(--error-color)' :
+          parseFloat(state) > 12 ? 'var(--warning-color)' : ''}
+      tap_action:
+        action: more-info
+    - entity: sensor.living_room_pm25
+      show_icon: false
+      origami_base:
+        name: "${num(attr.voc_index, 0) || '–'}"
+        label: VOC
+        name_color: >-
+          ${parseFloat(attr.voc_index) > 300 ? 'var(--error-color)' :
+          parseFloat(attr.voc_index) > 150 ? 'var(--warning-color)' : ''}
+      tap_action:
+        action: more-info
+styles: |-
+  ha-card .bubble-icon-container .bubble-icon {
+    color: ${(v => !Number.isFinite(v) ? 'var(--secondary-text-color)' :
+      v > 35 ? 'var(--error-color)' : v > 12 ? 'var(--warning-color)' :
+      'var(--success-color)')(parseFloat(hass.states['sensor.living_room_pm25']?.state))} !important;
+    --icon-primary-color: currentColor;
+  }

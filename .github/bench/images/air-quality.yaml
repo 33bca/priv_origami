@@ -1,0 +1,21 @@
+# Clean air by day and a higher particle level at night.
+kind: panel
+cards:
+  - file: air-quality/card.yaml
+states:
+  sensor.living_room_pm25:
+    state: '8'
+    attributes: {friendly_name: Living room, voc_index: 85, unit_of_measurement: 'µg/m³'}
+templates:
+  - {match: "{%- if pm is none -%}Unavailable", result: Good air}
+  - {match: "{%- if pm is none -%}mdi:help", result: 'mdi:check-bold'}
+  - {match: "state_attr('sensor.living_room_pm25', 'friendly_name')", result: Living room}
+dark:
+  states:
+    sensor.living_room_pm25:
+      state: '22'
+      attributes: {friendly_name: Living room, voc_index: 175, unit_of_measurement: 'µg/m³'}
+  templates:
+    - {match: "{%- if pm is none -%}Unavailable", result: Moderate air}
+    - {match: "{%- if pm is none -%}mdi:help", result: 'mdi:exclamation-thick'}
+    - {match: "state_attr('sensor.living_room_pm25', 'friendly_name')", result: Living room}
